@@ -1,0 +1,573 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>SmartHosp — NICU / PICU</title>
+<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:"Segoe UI",Arial,sans-serif;font-size:10.5pt;color:#111;background:#f1f5f9}
+.ar{font-family:"Cairo",Arial,sans-serif;direction:rtl}
+/* Nav */
+.nav{background:#0F2557;color:white;padding:.4rem .75rem;display:flex;flex-wrap:wrap;gap:.3rem;align-items:center;position:sticky;top:0;z-index:100}
+.nav-title{font-size:.85rem;font-weight:700;margin-right:.5rem}
+.stop-btn{background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.2);color:white;padding:.25rem .65rem;border-radius:3px;cursor:pointer;font-size:.72rem;font-family:inherit}
+.stop-btn:hover,.stop-btn.active{background:white;color:#0F2557;font-weight:700}
+.print-btn{background:#059669;color:white;border:none;padding:.25rem .75rem;border-radius:3px;cursor:pointer;font-size:.72rem;font-weight:700;font-family:inherit}
+.settings-btn{background:rgba(255,255,255,.12);color:white;border:1px solid rgba(255,255,255,.2);padding:.25rem .65rem;border-radius:3px;cursor:pointer;font-size:.72rem;font-family:inherit}
+/* Stops */
+.stop{display:none}
+.stop.active{display:block}
+/* Form page */
+.fp{display:block;max-width:210mm;margin:0 auto .75rem;background:white;box-shadow:0 1px 6px rgba(0,0,0,.1);position:relative;overflow:hidden}
+.fp::before{content:"";position:absolute;top:0;left:0;right:0;height:4px;background:var(--c,#0F2557)}
+/* Form header */
+.fh{display:flex;align-items:stretch;min-height:55px}
+.fh.ar{direction:rtl}
+.logo-box{width:55px;border-right:1px solid #e2e8f0;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.logo-inner{width:42px;height:42px;border:1.5px dashed #ccc;border-radius:4px;display:flex;align-items:center;justify-content:center}
+.hc{flex:1;padding:5px 10px}
+.hc.ar{direction:rtl}
+.hosp-name{font-size:7pt;font-weight:700;color:#475569;text-transform:uppercase;letter-spacing:.05em}
+.hosp-line{border-bottom:1px solid #ccc;min-height:12px;margin-top:2px}
+.ft{font-size:12pt;font-weight:800;margin-top:3px}
+.ft.ar{font-family:"Cairo",Arial,sans-serif}
+.fs{font-size:7pt;color:#64748b;margin-top:1px}
+.fs.ar{font-family:"Cairo",Arial,sans-serif}
+.hr{width:80px;padding:5px 7px;text-align:right;display:flex;flex-direction:column;justify-content:space-between;border-left:1px solid #e2e8f0;flex-shrink:0}
+.fc{font-size:12pt;font-weight:900}
+.fg{font-size:6.5pt;color:#888}
+/* Patient strip */
+.ps{display:grid;grid-template-columns:2fr 1fr 1fr 1fr 1fr;border-bottom:1.5px solid #e2e8f0}
+.ps.ar{direction:rtl}
+.sc{padding:3px 7px;border-right:1px solid #e2e8f0}
+.sc:last-child{border-right:none}
+.sl{font-size:6pt;font-weight:700;color:#888;text-transform:uppercase;letter-spacing:.03em;display:block}
+.sl.ar{font-family:"Cairo",Arial,sans-serif;text-transform:none;font-size:7.5pt}
+.sv{border-bottom:1px solid #ccc;min-height:14px;margin-top:2px}
+/* Role stripe */
+.rs{padding:3px 10px;font-size:7pt;font-weight:600;color:#475569;border-bottom:1px solid #e2e8f0;overflow:hidden}
+.rs.ar{font-family:"Cairo",Arial,sans-serif;direction:rtl}
+/* Body */
+.body{padding:0 10px 6px}
+/* Section */
+.sec{font-size:7.5pt;font-weight:700;padding:3px 8px;margin-top:6px;color:#334155}
+/* Fields */
+.gg1{display:grid;gap:3px;margin-bottom:3px}
+.gg2{display:grid;grid-template-columns:1fr 1fr;gap:4px;margin-bottom:3px}
+.gg3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:4px;margin-bottom:3px}
+.gg4{display:grid;grid-template-columns:repeat(4,1fr);gap:4px;margin-bottom:3px}
+.fld{display:flex;flex-direction:column;gap:2px}
+.fld.ar{direction:rtl}
+.fld label{font-size:6.5pt;font-weight:700;color:#555;text-transform:uppercase;letter-spacing:.03em}
+.fld label.ar{font-family:"Cairo",Arial,sans-serif;text-transform:none;letter-spacing:0;font-size:8pt}
+.fld .l{border-bottom:1px solid #888;min-height:15px}
+.fld .l2{border-bottom:1px solid #888;min-height:26px}
+.fld .l3{border-bottom:1px solid #888;min-height:40px}
+/* Checkboxes */
+.cg1{display:grid;gap:2px;margin-bottom:3px}
+.cg2{display:grid;grid-template-columns:1fr 1fr;gap:2px;margin-bottom:3px}
+.cg3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:2px;margin-bottom:3px}
+.cg4{display:grid;grid-template-columns:repeat(4,1fr);gap:2px;margin-bottom:3px}
+.ci{display:flex;align-items:flex-start;gap:5px;font-size:8.5pt;padding:1px 0}
+.ci.ar{direction:rtl;font-family:"Cairo",Arial,sans-serif;font-size:9pt}
+.cb{width:11px;height:11px;border:1.5px solid #555;flex-shrink:0;margin-top:2px}
+/* Vitals */
+.vg{display:grid;grid-template-columns:repeat(10,1fr);gap:3px;padding:3px 0}
+.vc{border-bottom:1.5px solid #e2e8f0;padding:2px 3px;text-align:center}
+.vl{font-size:6pt;font-weight:700;color:#888;text-transform:uppercase;display:block}
+.vv{min-height:14px;border-bottom:1px solid #ccc;margin-top:1px}
+/* Tables */
+.tbl{width:100%;border-collapse:collapse;font-size:8pt;margin-bottom:3px}
+.tbl th{background:#f1f5f9;color:#334155;padding:3px 5px;text-align:left;font-size:7.5pt;font-weight:700;border-bottom:2px solid var(--c,#0F2557)}
+.tbl td{border-bottom:1px solid #f1f5f9;padding:3px 5px;height:18px}
+.tbl tr:nth-child(even) td{background:#fafafa}
+/* Signatures */
+.sgr{display:grid;gap:12px;padding:6px 10px;border-top:1.5px dashed #ccc;margin-top:5px}
+.g2{grid-template-columns:1fr 1fr}
+.g3{grid-template-columns:1fr 1fr 1fr}
+.sb{display:flex;flex-direction:column}
+.sb.ar{direction:rtl}
+.sl2{border-bottom:1px solid #334155;min-height:22px;margin-bottom:3px}
+.sl3{font-size:6pt;color:#666;text-transform:uppercase;letter-spacing:.03em}
+.sl3.ar{font-family:"Cairo",Arial,sans-serif;text-transform:none;letter-spacing:0;font-size:7pt}
+/* Settings */
+.settings-panel{display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:200;align-items:center;justify-content:center}
+.settings-inner{background:white;border-radius:8px;padding:1.25rem;max-width:400px;width:90%;box-shadow:0 20px 50px rgba(0,0,0,.3)}
+.settings-inner h3{font-size:.95rem;font-weight:700;color:#0f2557;margin-bottom:.75rem}
+.si-l{font-size:.75rem;font-weight:700;color:#555;display:block;margin-bottom:.25rem}
+.si-i{width:100%;border:1.5px solid #e2e8f0;border-radius:4px;padding:.4rem .6rem;font-size:.85rem;font-family:inherit;margin-bottom:.6rem}
+.si-b{display:flex;gap:.5rem;justify-content:flex-end;margin-top:.5rem}
+.btn-c{padding:.35rem .9rem;border:1.5px solid #e2e8f0;border-radius:4px;background:white;cursor:pointer;font-family:inherit;font-size:.8rem}
+.btn-a{padding:.35rem .9rem;background:#0f2557;color:white;border:none;border-radius:4px;cursor:pointer;font-family:inherit;font-size:.8rem;font-weight:700}
+/* Print */
+@media print{
+  .nav,.settings-panel,#pathway-legend{display:none!important}
+  .fp{page-break-after:always;page-break-inside:avoid}
+  .sgr{page-break-inside:avoid}
+  .body{padding-bottom:2px}
+  .sec{margin-top:3px;padding:2px 8px}
+  .gg1,.gg2,.gg3,.gg4{margin-bottom:2px}
+  .tbl td{height:14px;padding:1px 4px}
+  .fld .l{min-height:12px}
+  .fld .l2{min-height:19px}
+  .fld .l3{min-height:28px}
+  .fp{box-shadow:none!important;margin:0!important;page-break-after:always}
+  @page{margin:6mm;size:A4 portrait}
+  *{-webkit-print-color-adjust:exact!important;print-color-adjust:exact!important}
+}
+
+.nav{background:#0F2557;color:white;padding:.4rem .75rem;display:flex;flex-wrap:wrap;gap:.3rem;align-items:center;position:sticky;top:0;z-index:100}
+.nav-title{font-size:.85rem;font-weight:700;margin-right:.5rem}
+.stop-btn{background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.2);color:white;padding:.25rem .65rem;border-radius:3px;cursor:pointer;font-size:.72rem;font-family:inherit}
+.stop-btn.active,.stop-btn:hover{background:white;color:#0F2557;font-weight:700}
+.print-btn{background:#DC2626;color:white;border:none;padding:.25rem .75rem;border-radius:3px;cursor:pointer;font-size:.72rem;font-weight:700;font-family:inherit}
+.settings-btn{background:rgba(255,255,255,.12);color:white;border:1px solid rgba(255,255,255,.2);padding:.25rem .65rem;border-radius:3px;cursor:pointer;font-size:.72rem;font-family:inherit}
+.stop{display:none}.stop.active{display:block}
+.settings-panel{display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:200;align-items:center;justify-content:center}
+.settings-inner{background:white;border-radius:8px;padding:1.25rem;max-width:400px;width:90%;box-shadow:0 20px 50px rgba(0,0,0,.3)}
+.settings-inner h3{font-size:.95rem;font-weight:700;color:#0f2557;margin-bottom:.75rem}
+.si-l{font-size:.75rem;font-weight:700;color:#555;display:block;margin-bottom:.25rem}
+.si-i{width:100%;border:1.5px solid #e2e8f0;border-radius:4px;padding:.4rem .6rem;font-size:.85rem;font-family:inherit;margin-bottom:.6rem}
+.si-b{display:flex;gap:.5rem;justify-content:flex-end;margin-top:.5rem}
+.btn-c{padding:.35rem .9rem;border:1.5px solid #e2e8f0;border-radius:4px;background:white;cursor:pointer;font-family:inherit;font-size:.8rem}
+.btn-a{padding:.35rem .9rem;background:#0f2557;color:white;border:none;border-radius:4px;cursor:pointer;font-family:inherit;font-size:.8rem;font-weight:700}
+@media print{.nav,.settings-panel{display:none!important}.fp{page-break-after:always;page-break-inside:avoid}.sgr{page-break-inside:avoid}@page{margin:6mm;size:A4 portrait}*{-webkit-print-color-adjust:exact!important;print-color-adjust:exact!important}}
+</style>
+</head>
+<body>
+<div class="nav">
+  <span class="nav-title">👶 SmartHosp — NICU / PICU</span>
+  <button class="print-btn" onclick="printAll()">🖨 Print All / طباعة</button>
+  <button class="settings-btn" onclick="openSettings()">⚙ Hospital / المستشفى</button>
+</div>
+
+<div class="settings-panel" id="sp">
+  <div class="settings-inner">
+    <h3>⚙ Hospital Settings</h3>
+    <label class="si-l">Hospital Name / اسم المستشفى</label>
+    <input type="text" id="si-n" class="si-i" placeholder="Enter hospital name">
+    <label class="si-l">Logo Image / الشعار</label>
+    <input type="file" id="lf" accept="image/*" style="font-size:.8rem;margin-bottom:.4rem">
+    <input type="hidden" id="ld">
+    <img id="lp" style="display:none;max-height:50px;max-width:140px;border:1px solid #e2e8f0;border-radius:4px;margin-bottom:.5rem">
+    <div class="si-b">
+      <button class="btn-c" onclick="closeSettings()">Cancel</button>
+      <button class="btn-a" onclick="applySettings()">Apply to All / تطبيق</button>
+    </div>
+  </div>
+</div>
+<div class="stop active" id="stop-nicu">
+<div class="fp" id="idblk-nicu" style="--c:#D97706">
+<div class="fh" style="border-top:4px solid #D97706">
+  <div class="logo-box"><div class="logo-inner"><span>Logo</span></div></div>
+  <div class="hc"><div class="hosp-name">Hospital Name</div><div class="hosp-line"></div>
+    <div class="ft" style="color:#D97706">Patient ID Band / <span style="font-family:'Cairo',Arial,sans-serif;font-size:11pt">سوار التعريف</span></div>
+    <div class="fs">6 per sheet · Cut along dashed line · NSR.01 / <span style="font-family:'Cairo',Arial,sans-serif">تُعبأ يدوياً · تُقطع وتُثبَّت على المعصم</span></div>
+  </div>
+  <div class="hr"><div class="fc" style="color:#D97706">ID-BLK</div><div class="fg">NSR.01</div></div>
+</div>
+<div class="ps">
+  <div class="sc"><span class="sl">Patient Name / اسم المريض</span><div class="sv"></div></div>
+  <div class="sc"><span class="sl">MRN / رقم الملف</span><div class="sv"></div></div>
+  <div class="sc"><span class="sl">Date of Birth / تاريخ الميلاد</span><div class="sv"></div></div>
+  <div class="sc"><span class="sl">Blood Group / فصيلة الدم</span><div class="sv"></div></div>
+  <div class="sc"><span class="sl">Date / التاريخ</span><div class="sv"></div></div>
+</div>
+<div style="padding:4px 10px;font-size:7pt;color:#555;background:#fffbeb;border-bottom:1px solid #e2e8f0">
+  Write Name + MRN + DOB + Allergy. Fill red □ if infection precautions apply. Verify 2 identifiers at every intervention — NSR.01
+</div>
+<div class="body" style="padding:6px 10px"><div style="border:1.5px solid #334155;border-radius:4px;display:grid;grid-template-columns:38px 1fr 22px;min-height:36px;margin-bottom:3px;border-bottom:2px dashed #94a3b8">
+  <div style="border-right:1px solid #e2e8f0;display:flex;align-items:center;justify-content:center;padding:2px"><div style="width:30px;height:30px;border:1px dashed #ccc;border-radius:3px;display:flex;align-items:center;justify-content:center"><span class="hosp-name" style="font-size:4pt;color:#bbb;text-align:center;line-height:1.2">Logo</span></div></div>
+  <div style="padding:3px 6px;display:flex;flex-direction:column;gap:2px">
+    <div style="font-size:5pt;font-weight:700;color:#475569" class="hosp-name">Hospital Name</div>
+    <div style="border-bottom:1.5px solid #334155;min-height:11px"></div>
+    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:4px">
+      <div><div style="font-size:4.5pt;font-weight:700;color:#888">MRN</div><div style="border-bottom:1px solid #888;min-height:9px"></div></div>
+      <div><div style="font-size:4.5pt;font-weight:700;color:#888">DOB</div><div style="border-bottom:1px solid #888;min-height:9px"></div></div>
+      <div><div style="font-size:4.5pt;font-weight:700;color:#888">ALLERGY ⚠</div><div style="border-bottom:1px solid #888;min-height:9px"></div></div>
+    </div>
+  </div>
+  <div style="border-left:1px solid #e2e8f0;display:flex;align-items:center;justify-content:center">
+    <div style="width:14px;height:14px;border:2px solid #DC2626;border-radius:2px"></div>
+  </div>
+</div><div style="border:1.5px solid #334155;border-radius:4px;display:grid;grid-template-columns:38px 1fr 22px;min-height:36px;margin-bottom:3px;border-bottom:2px dashed #94a3b8">
+  <div style="border-right:1px solid #e2e8f0;display:flex;align-items:center;justify-content:center;padding:2px"><div style="width:30px;height:30px;border:1px dashed #ccc;border-radius:3px;display:flex;align-items:center;justify-content:center"><span class="hosp-name" style="font-size:4pt;color:#bbb;text-align:center;line-height:1.2">Logo</span></div></div>
+  <div style="padding:3px 6px;display:flex;flex-direction:column;gap:2px">
+    <div style="font-size:5pt;font-weight:700;color:#475569" class="hosp-name">Hospital Name</div>
+    <div style="border-bottom:1.5px solid #334155;min-height:11px"></div>
+    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:4px">
+      <div><div style="font-size:4.5pt;font-weight:700;color:#888">MRN</div><div style="border-bottom:1px solid #888;min-height:9px"></div></div>
+      <div><div style="font-size:4.5pt;font-weight:700;color:#888">DOB</div><div style="border-bottom:1px solid #888;min-height:9px"></div></div>
+      <div><div style="font-size:4.5pt;font-weight:700;color:#888">ALLERGY ⚠</div><div style="border-bottom:1px solid #888;min-height:9px"></div></div>
+    </div>
+  </div>
+  <div style="border-left:1px solid #e2e8f0;display:flex;align-items:center;justify-content:center">
+    <div style="width:14px;height:14px;border:2px solid #DC2626;border-radius:2px"></div>
+  </div>
+</div><div style="border:1.5px solid #334155;border-radius:4px;display:grid;grid-template-columns:38px 1fr 22px;min-height:36px;margin-bottom:3px;border-bottom:2px dashed #94a3b8">
+  <div style="border-right:1px solid #e2e8f0;display:flex;align-items:center;justify-content:center;padding:2px"><div style="width:30px;height:30px;border:1px dashed #ccc;border-radius:3px;display:flex;align-items:center;justify-content:center"><span class="hosp-name" style="font-size:4pt;color:#bbb;text-align:center;line-height:1.2">Logo</span></div></div>
+  <div style="padding:3px 6px;display:flex;flex-direction:column;gap:2px">
+    <div style="font-size:5pt;font-weight:700;color:#475569" class="hosp-name">Hospital Name</div>
+    <div style="border-bottom:1.5px solid #334155;min-height:11px"></div>
+    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:4px">
+      <div><div style="font-size:4.5pt;font-weight:700;color:#888">MRN</div><div style="border-bottom:1px solid #888;min-height:9px"></div></div>
+      <div><div style="font-size:4.5pt;font-weight:700;color:#888">DOB</div><div style="border-bottom:1px solid #888;min-height:9px"></div></div>
+      <div><div style="font-size:4.5pt;font-weight:700;color:#888">ALLERGY ⚠</div><div style="border-bottom:1px solid #888;min-height:9px"></div></div>
+    </div>
+  </div>
+  <div style="border-left:1px solid #e2e8f0;display:flex;align-items:center;justify-content:center">
+    <div style="width:14px;height:14px;border:2px solid #DC2626;border-radius:2px"></div>
+  </div>
+</div><div style="border:1.5px solid #334155;border-radius:4px;display:grid;grid-template-columns:38px 1fr 22px;min-height:36px;margin-bottom:3px;border-bottom:2px dashed #94a3b8">
+  <div style="border-right:1px solid #e2e8f0;display:flex;align-items:center;justify-content:center;padding:2px"><div style="width:30px;height:30px;border:1px dashed #ccc;border-radius:3px;display:flex;align-items:center;justify-content:center"><span class="hosp-name" style="font-size:4pt;color:#bbb;text-align:center;line-height:1.2">Logo</span></div></div>
+  <div style="padding:3px 6px;display:flex;flex-direction:column;gap:2px">
+    <div style="font-size:5pt;font-weight:700;color:#475569" class="hosp-name">Hospital Name</div>
+    <div style="border-bottom:1.5px solid #334155;min-height:11px"></div>
+    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:4px">
+      <div><div style="font-size:4.5pt;font-weight:700;color:#888">MRN</div><div style="border-bottom:1px solid #888;min-height:9px"></div></div>
+      <div><div style="font-size:4.5pt;font-weight:700;color:#888">DOB</div><div style="border-bottom:1px solid #888;min-height:9px"></div></div>
+      <div><div style="font-size:4.5pt;font-weight:700;color:#888">ALLERGY ⚠</div><div style="border-bottom:1px solid #888;min-height:9px"></div></div>
+    </div>
+  </div>
+  <div style="border-left:1px solid #e2e8f0;display:flex;align-items:center;justify-content:center">
+    <div style="width:14px;height:14px;border:2px solid #DC2626;border-radius:2px"></div>
+  </div>
+</div><div style="border:1.5px solid #334155;border-radius:4px;display:grid;grid-template-columns:38px 1fr 22px;min-height:36px;margin-bottom:3px;border-bottom:2px dashed #94a3b8">
+  <div style="border-right:1px solid #e2e8f0;display:flex;align-items:center;justify-content:center;padding:2px"><div style="width:30px;height:30px;border:1px dashed #ccc;border-radius:3px;display:flex;align-items:center;justify-content:center"><span class="hosp-name" style="font-size:4pt;color:#bbb;text-align:center;line-height:1.2">Logo</span></div></div>
+  <div style="padding:3px 6px;display:flex;flex-direction:column;gap:2px">
+    <div style="font-size:5pt;font-weight:700;color:#475569" class="hosp-name">Hospital Name</div>
+    <div style="border-bottom:1.5px solid #334155;min-height:11px"></div>
+    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:4px">
+      <div><div style="font-size:4.5pt;font-weight:700;color:#888">MRN</div><div style="border-bottom:1px solid #888;min-height:9px"></div></div>
+      <div><div style="font-size:4.5pt;font-weight:700;color:#888">DOB</div><div style="border-bottom:1px solid #888;min-height:9px"></div></div>
+      <div><div style="font-size:4.5pt;font-weight:700;color:#888">ALLERGY ⚠</div><div style="border-bottom:1px solid #888;min-height:9px"></div></div>
+    </div>
+  </div>
+  <div style="border-left:1px solid #e2e8f0;display:flex;align-items:center;justify-content:center">
+    <div style="width:14px;height:14px;border:2px solid #DC2626;border-radius:2px"></div>
+  </div>
+</div><div style="border:1.5px solid #334155;border-radius:4px;display:grid;grid-template-columns:38px 1fr 22px;min-height:36px;margin-bottom:3px">
+  <div style="border-right:1px solid #e2e8f0;display:flex;align-items:center;justify-content:center;padding:2px"><div style="width:30px;height:30px;border:1px dashed #ccc;border-radius:3px;display:flex;align-items:center;justify-content:center"><span class="hosp-name" style="font-size:4pt;color:#bbb;text-align:center;line-height:1.2">Logo</span></div></div>
+  <div style="padding:3px 6px;display:flex;flex-direction:column;gap:2px">
+    <div style="font-size:5pt;font-weight:700;color:#475569" class="hosp-name">Hospital Name</div>
+    <div style="border-bottom:1.5px solid #334155;min-height:11px"></div>
+    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:4px">
+      <div><div style="font-size:4.5pt;font-weight:700;color:#888">MRN</div><div style="border-bottom:1px solid #888;min-height:9px"></div></div>
+      <div><div style="font-size:4.5pt;font-weight:700;color:#888">DOB</div><div style="border-bottom:1px solid #888;min-height:9px"></div></div>
+      <div><div style="font-size:4.5pt;font-weight:700;color:#888">ALLERGY ⚠</div><div style="border-bottom:1px solid #888;min-height:9px"></div></div>
+    </div>
+  </div>
+  <div style="border-left:1px solid #e2e8f0;display:flex;align-items:center;justify-content:center">
+    <div style="width:14px;height:14px;border:2px solid #DC2626;border-radius:2px"></div>
+  </div>
+</div></div>
+</div><div class="fp" id="nicuconsent" style="--c:#D97706">
+<div class="fh ar" style="border-top:4px solid #D97706;direction:rtl">
+  <div class="logo-box" style="border-right:none;border-left:1px solid #e2e8f0"><div class="logo-inner"><span class="hosp-name ar" style="font-family:'Cairo',Arial,sans-serif;font-size:5pt;color:#bbb">شعار</span></div></div>
+  <div class="hc ar" style="direction:rtl"><div class="hosp-name ar" style="font-family:'Cairo',Arial,sans-serif">اسم المستشفى</div><div class="hosp-line"></div>
+    <div class="ft ar" style="color:#D97706;font-family:'Cairo',Arial,sans-serif">موافقة أسرة المريض — وحدة العناية المركزة للأطفال والرضع</div>
+    <div class="fs ar" style="font-family:'Cairo',Arial,sans-serif">موافقة القبول والإجراءات الغازية</div>
+  </div>
+  <div class="hr" style="border-right:1px solid #e2e8f0;border-left:none;text-align:left"><div class="fc" style="color:#D97706">NICU-02</div><div class="fg">PCC.1 · NSR.08</div></div>
+</div>
+<div class="ps ar" style="direction:rtl">
+  <div class="sc" style="border-right:none;border-left:1px solid #e2e8f0"><span class="sl ar" style="font-family:'Cairo',Arial,sans-serif;text-transform:none;font-size:7.5pt">اسم المريض</span><div class="sv"></div></div><div class="sc" style="border-right:none;border-left:1px solid #e2e8f0"><span class="sl ar" style="font-family:'Cairo',Arial,sans-serif;text-transform:none;font-size:7.5pt">رقم الملف</span><div class="sv"></div></div><div class="sc" style="border-right:none;border-left:1px solid #e2e8f0"><span class="sl ar" style="font-family:'Cairo',Arial,sans-serif;text-transform:none;font-size:7.5pt">تاريخ الميلاد</span><div class="sv"></div></div><div class="sc" style="border-right:none;border-left:1px solid #e2e8f0"><span class="sl ar" style="font-family:'Cairo',Arial,sans-serif;text-transform:none;font-size:7.5pt">فصيلة الدم</span><div class="sv"></div></div><div class="sc" style="border-right:none;border-left:1px solid #e2e8f0"><span class="sl ar" style="font-family:'Cairo',Arial,sans-serif;text-transform:none;font-size:7.5pt">التاريخ</span><div class="sv"></div></div>
+</div>
+<div class="infect-bar" style="display:none"></div>
+<div class="rs ar" style="color:#D97706;border-bottom:1px solid #D97706;direction:rtl;font-family:'Cairo',Arial,sans-serif">NICU-02 — موافقة القبول والإجراءات<span style="float:left">PCC.1 · NSR.08</span></div>
+<div class="body">
+<div class="sec ar" style="border-right:3px solid #D97706;border-left:none;font-family:'Cairo',Arial,sans-serif;text-transform:none;direction:rtl;text-align:right">معلومات تقدمت للوالدين / الوليّ</div>
+<div class="cg2 ar" style="direction:rtl">
+  <div class="ci ar"><div class="cb"></div><span style="font-family:'Cairo',Arial,sans-serif;font-size:9pt">شُرح تشخيص الطفل وسبب الحاجة للوحدة المركزة</span></div>
+  <div class="ci ar"><div class="cb"></div><span style="font-family:'Cairo',Arial,sans-serif;font-size:9pt">شُرحت خطة العلاج والرعاية المتوقعة</span></div>
+  <div class="ci ar"><div class="cb"></div><span style="font-family:'Cairo',Arial,sans-serif;font-size:9pt">شُرحت طبيعة الوحدة المركزة وإجراءاتها</span></div>
+  <div class="ci ar"><div class="cb"></div><span style="font-family:'Cairo',Arial,sans-serif;font-size:9pt">شُرحت الأجهزة والتدخلات الغازية المحتملة</span></div>
+  <div class="ci ar"><div class="cb"></div><span style="font-family:'Cairo',Arial,sans-serif;font-size:9pt">أُبلغ الوالدان بحقوق الطفل وحقوق الأسرة</span></div>
+  <div class="ci ar"><div class="cb"></div><span style="font-family:'Cairo',Arial,sans-serif;font-size:9pt">أُجيب على أسئلة الوالدين / الوليّ</span></div>
+</div>
+<div class="sec ar" style="border-right:3px solid #D97706;border-left:none;font-family:'Cairo',Arial,sans-serif;text-transform:none;direction:rtl;text-align:right">الموافقة على الإجراءات</div>
+<div class="cg2 ar" style="direction:rtl">
+  <div class="ci ar"><div class="cb"></div><span style="font-family:'Cairo',Arial,sans-serif;font-size:9pt">القبول في وحدة العناية المركزة للأطفال / الرضع</span></div>
+  <div class="ci ar"><div class="cb"></div><span style="font-family:'Cairo',Arial,sans-serif;font-size:9pt">التهوية الميكانيكية عند الحاجة</span></div>
+  <div class="ci ar"><div class="cb"></div><span style="font-family:'Cairo',Arial,sans-serif;font-size:9pt">الخطوط الوريدية المركزية وقسطرة الشريان</span></div>
+  <div class="ci ar"><div class="cb"></div><span style="font-family:'Cairo',Arial,sans-serif;font-size:9pt">التغذية الوريدية الكاملة TPN عند الحاجة</span></div>
+  <div class="ci ar"><div class="cb"></div><span style="font-family:'Cairo',Arial,sans-serif;font-size:9pt">نقل الدم ومنتجاته عند الحاجة الطبية</span></div>
+  <div class="ci ar"><div class="cb"></div><span style="font-family:'Cairo',Arial,sans-serif;font-size:9pt">إجراء الفحوصات والأشعة المطلوبة</span></div>
+  <div class="ci ar"><div class="cb"></div><span style="font-family:'Cairo',Arial,sans-serif;font-size:9pt">التشاور مع التخصصات الأخرى</span></div>
+  <div class="ci ar"><div class="cb"></div><span style="font-family:'Cairo',Arial,sans-serif;font-size:9pt">الإنعاش القلبي الرئوي عند الحاجة</span></div>
+</div>
+<div style="direction:rtl;margin-top:4px">
+  <div class="gg2 ar" style="direction:rtl">
+    <div class="fld ar"><label style="font-family:'Cairo',Arial,sans-serif;text-transform:none;font-size:8pt">اسم الوليّ / الأب / الأم</label><div class="l"></div></div> <div class="fld ar"><label style="font-family:'Cairo',Arial,sans-serif;text-transform:none;font-size:8pt">صلة القرابة</label><div class="l"></div></div>
+    <div class="fld ar"><label style="font-family:'Cairo',Arial,sans-serif;text-transform:none;font-size:8pt">رقم الهاتف</label><div class="l"></div></div>
+  </div>
+</div>
+<div class="sgr ar g3" style="direction:rtl"><div class="sb ar"><div class="sl2"></div><div class="sl3 ar" style="font-family:'Cairo',Arial,sans-serif;text-transform:none">الوليّ / أحد الوالدين — التوقيع</div></div><div class="sb ar"><div class="sl2"></div><div class="sl3 ar" style="font-family:'Cairo',Arial,sans-serif;text-transform:none">طبيب الوحدة — الاسم والتوقيع</div></div><div class="sb ar"><div class="sl2"></div><div class="sl3 ar" style="font-family:'Cairo',Arial,sans-serif;text-transform:none">التاريخ والوقت</div></div></div>
+</div>
+</div><div class="fp" id="nicuchart" style="--c:#0F2557">
+<div class="fh" style="border-top:4px solid #0F2557">
+  <div class="logo-box"><div class="logo-inner"><span>Logo</span></div></div>
+  <div class="hc"><div class="hosp-name">Hospital Name</div><div class="hosp-line"></div>
+    <div class="ft" style="color:#0F2557">NICU Daily Chart / <span style="font-family:'Cairo',Arial,sans-serif;font-size:11pt">سجل وحدة رعاية الرضع اليومي</span></div>
+    <div class="fs">Vitals · Ventilator · Feeds · Fluid Balance · Medications / <span style="font-family:'Cairo',Arial,sans-serif">علامات حيوية · تهوية · تغذية · ميزان سوائل · أدوية</span></div>
+  </div>
+  <div class="hr"><div class="fc" style="color:#0F2557">NICU-01</div><div class="fg">COP.6</div></div>
+</div>
+<div class="ps">
+  <div class="sc"><span class="sl">Patient Name / اسم المريض</span><div class="sv"></div></div>
+  <div class="sc"><span class="sl">MRN / رقم الملف</span><div class="sv"></div></div>
+  <div class="sc"><span class="sl">Date of Birth / تاريخ الميلاد</span><div class="sv"></div></div>
+  <div class="sc"><span class="sl">Blood Group / فصيلة الدم</span><div class="sv"></div></div>
+  <div class="sc"><span class="sl">Date / التاريخ</span><div class="sv"></div></div>
+</div>
+<div class="infect-bar" style="display:none"></div>
+<div class="rs" style="color:#0F2557;border-bottom:1px solid #0F2557">NICU-01 — NICU Daily Chart / سجل وحدة رعاية الرضع اليومي<span style="float:right">COP.6</span></div>
+<div class="body">
+<div class="gg4" style="margin-top:4px">
+  <div class="fld"><label>NICU Day No. <span style="font-family:'Cairo',Arial,sans-serif;font-size:6pt;color:#94a3b8;font-weight:400">/ يوم الوحدة</span></label><div class="l"></div></div> <div class="fld"><label>Date <span style="font-family:'Cairo',Arial,sans-serif;font-size:6pt;color:#94a3b8;font-weight:400">/ التاريخ</span></label><div class="l"></div></div> <div class="fld"><label>GA / Corrected Age <span style="font-family:'Cairo',Arial,sans-serif;font-size:6pt;color:#94a3b8;font-weight:400">/ العمر الحملي / المصحح</span></label><div class="l"></div></div> <div class="fld"><label>Weight g <span style="font-family:'Cairo',Arial,sans-serif;font-size:6pt;color:#94a3b8;font-weight:400">/ الوزن</span></label><div class="l"></div></div>
+</div>
+<div class="sec" style="border-left:3px solid #0F2557">Vitals <span style="font-family:'Cairo',Arial,sans-serif;font-size:7pt;font-weight:400">/ العلامات الحيوية</span></div>
+<table class="tbl" style="font-size:7pt">
+  <tr>
+    <th style="width:30px">Time / <span style="font-family:'Cairo',Arial,sans-serif;font-weight:400;text-transform:none">الوقت</span></th>
+    <th style="width:38px">HR / <span style="font-family:'Cairo',Arial,sans-serif;font-weight:400;text-transform:none">النبض</span></th>
+    <th style="width:38px">RR / <span style="font-family:'Cairo',Arial,sans-serif;font-weight:400;text-transform:none">تنفس</span></th>
+    <th style="width:38px">SpO₂ / <span style="font-family:'Cairo',Arial,sans-serif;font-weight:400;text-transform:none">أكسجين</span></th>
+    <th style="width:50px">BP / <span style="font-family:'Cairo',Arial,sans-serif;font-weight:400;text-transform:none">الضغط</span></th>
+    <th style="width:40px">Temp / <span style="font-family:'Cairo',Arial,sans-serif;font-weight:400;text-transform:none">حرارة</span></th>
+    <th style="width:40px">FiO₂%</th>
+    <th style="width:45px">Blood Sugar</th>
+    <th>Notes / <span style="font-family:'Cairo',Arial,sans-serif;font-weight:400;text-transform:none">ملاحظات</span></th>
+  </tr>
+  <tr><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr><tr><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr><tr><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr><tr><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr><tr><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr><tr><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr><tr><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr><tr><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+</table>
+<div class="sec" style="border-left:3px solid #0F2557">Ventilator / Respiratory Support <span style="font-family:'Cairo',Arial,sans-serif;font-size:7pt;font-weight:400">/ دعم التنفس</span></div>
+<div style="display:grid;grid-template-columns:repeat(6,1fr);gap:4px">
+  <div class="fld"><label>Mode <span style="font-family:'Cairo',Arial,sans-serif;font-size:6pt;color:#94a3b8;font-weight:400">/ الوضع</span></label><div class="l"></div></div> <div class="fld"><label>FiO₂ % <span style="font-family:'Cairo',Arial,sans-serif;font-size:6pt;color:#94a3b8;font-weight:400">/ الأكسجين</span></label><div class="l"></div></div> <div class="fld"><label>PEEP <span style="font-family:'Cairo',Arial,sans-serif;font-size:6pt;color:#94a3b8;font-weight:400">/ ضغط نهائي</span></label><div class="l"></div></div> <div class="fld"><label>PIP <span style="font-family:'Cairo',Arial,sans-serif;font-size:6pt;color:#94a3b8;font-weight:400">/ ذروة الضغط</span></label><div class="l"></div></div> <div class="fld"><label>Rate /min <span style="font-family:'Cairo',Arial,sans-serif;font-size:6pt;color:#94a3b8;font-weight:400">/ التردد</span></label><div class="l"></div></div> <div class="fld"><label>TV mL/kg <span style="font-family:'Cairo',Arial,sans-serif;font-size:6pt;color:#94a3b8;font-weight:400">/ الحجم</span></label><div class="l"></div></div>
+</div>
+<div class="sec" style="border-left:3px solid #0F2557">Feeds <span style="font-family:'Cairo',Arial,sans-serif;font-size:7pt;font-weight:400">/ التغذية</span></div>
+<table class="tbl" style="font-size:7.5pt">
+  <tr>
+    <th style="width:40px">Time</th>
+    <th style="width:80px">Feed Type / نوع التغذية</th>
+    <th style="width:60px">Volume mL</th>
+    <th style="width:70px">Route / الطريق</th>
+    <th style="width:60px">Tolerated ✓</th>
+    <th>Notes</th>
+  </tr>
+  <tr><td></td><td></td><td></td><td></td><td></td><td></td></tr><tr><td></td><td></td><td></td><td></td><td></td><td></td></tr><tr><td></td><td></td><td></td><td></td><td></td><td></td></tr><tr><td></td><td></td><td></td><td></td><td></td><td></td></tr><tr><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+</table>
+<div class="sec" style="border-left:3px solid #0F2557">Fluid Balance <span style="font-family:'Cairo',Arial,sans-serif;font-size:7pt;font-weight:400">/ الميزان المائي</span></div>
+<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
+  <table class="tbl"><tr><th>Input / المدخلات</th><th style="width:65px">mL</th></tr>
+    <tr><td>IV Fluids / سوائل</td><td></td></tr><tr><td>Feeds / تغذية</td><td></td></tr><tr><td>Medications / أدوية</td><td></td></tr><tr><td>Total Input / المجموع</td><td></td></tr>
+  </table>
+  <table class="tbl"><tr><th>Output / المخرجات</th><th style="width:65px">mL</th></tr>
+    <tr><td>Urine / البول</td><td></td></tr><tr><td>Gastric residue / ارتداد معدي</td><td></td></tr><tr><td>Stool / البراز</td><td></td></tr><tr><td>Total Output / المجموع</td><td></td></tr>
+  </table>
+</div>
+<div class="sec" style="border-left:3px solid #0F2557">Medications <span style="font-family:'Cairo',Arial,sans-serif;font-size:7pt;font-weight:400">/ الأدوية</span></div>
+<table class="tbl">
+  <tr><th>Drug / الدواء</th><th style="width:80px">Dose /kg</th><th style="width:85px">Calculated</th><th style="width:55px">Route</th><th style="width:80px">Frequency</th><th style="width:55px">Nurse</th></tr>
+  <tr><td></td><td></td><td></td><td></td><td></td><td></td></tr><tr><td></td><td></td><td></td><td></td><td></td><td></td></tr><tr><td></td><td></td><td></td><td></td><td></td><td></td></tr><tr><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+</table>
+<div class="sgr g3"><div class="sb"><div class="sl2"></div><div class="sl3">Neonatologist / Intensivist<span style="font-family:'Cairo',Arial,sans-serif;font-size:6pt;font-weight:400"> / الطبيب المشرف</span></div></div><div class="sb"><div class="sl2"></div><div class="sl3">NICU Nurse<span style="font-family:'Cairo',Arial,sans-serif;font-size:6pt;font-weight:400"> / ممرضة الوحدة</span></div></div><div class="sb"><div class="sl2"></div><div class="sl3">Date & Time<span style="font-family:'Cairo',Arial,sans-serif;font-size:6pt;font-weight:400"> / التاريخ والوقت</span></div></div></div>
+</div>
+</div><div class="fp" id="nicudc" style="--c:#1D4ED8">
+<div class="fh" style="border-top:4px solid #1D4ED8">
+  <div class="logo-box"><div class="logo-inner"><span>Logo</span></div></div>
+  <div class="hc"><div class="hosp-name">Hospital Name</div><div class="hosp-line"></div>
+    <div class="ft" style="color:#1D4ED8">NICU Discharge Summary / <span style="font-family:'Cairo',Arial,sans-serif;font-size:11pt">ملخص خروج وحدة الرضع</span></div>
+    <div class="fs">Diagnosis · Growth · Medications · Follow-up / <span style="font-family:'Cairo',Arial,sans-serif">التشخيص · النمو · الأدوية · المتابعة</span></div>
+  </div>
+  <div class="hr"><div class="fc" style="color:#1D4ED8">NICU-DC</div><div class="fg">COP.10 · NSR.13</div></div>
+</div>
+<div class="ps">
+  <div class="sc"><span class="sl">Patient Name / اسم المريض</span><div class="sv"></div></div>
+  <div class="sc"><span class="sl">MRN / رقم الملف</span><div class="sv"></div></div>
+  <div class="sc"><span class="sl">Date of Birth / تاريخ الميلاد</span><div class="sv"></div></div>
+  <div class="sc"><span class="sl">Blood Group / فصيلة الدم</span><div class="sv"></div></div>
+  <div class="sc"><span class="sl">Date / التاريخ</span><div class="sv"></div></div>
+</div>
+<div class="infect-bar" style="display:none"></div>
+<div class="rs" style="color:#1D4ED8;border-bottom:1px solid #1D4ED8">NICU-DC — NICU Discharge Summary / ملخص الخروج<span style="float:right">COP.10</span></div>
+<div class="body">
+<div style="display:grid;grid-template-columns:1fr 1px 1fr;gap:0">
+  <div style="padding:0 8px">
+    <div class="gg2" style="margin-top:4px">
+      <div class="fld"><label>Admission Date</label><div class="l"></div></div> <div class="fld"><label>Discharge Date</label><div class="l"></div></div>
+      <div class="fld"><label>GA at Birth</label><div class="l"></div></div> <div class="fld"><label>Corrected Age at Discharge</label><div class="l"></div></div>
+      <div class="fld"><label>Birth Weight g</label><div class="l"></div></div> <div class="fld"><label>Discharge Weight g</label><div class="l"></div></div>
+    </div>
+  </div>
+  <div style="background:#e2e8f0"></div>
+  <div style="padding:0 8px;direction:rtl">
+    <div style="margin-top:4px;direction:rtl">
+      <div class="fld ar"><label style="font-family:'Cairo',Arial,sans-serif;text-transform:none;font-size:8pt">تاريخ القبول</label><div class="l"></div></div> <div class="fld ar"><label style="font-family:'Cairo',Arial,sans-serif;text-transform:none;font-size:8pt">تاريخ الخروج</label><div class="l"></div></div>
+      <div class="fld ar"><label style="font-family:'Cairo',Arial,sans-serif;text-transform:none;font-size:8pt">العمر الحملي عند الولادة</label><div class="l"></div></div> <div class="fld ar"><label style="font-family:'Cairo',Arial,sans-serif;text-transform:none;font-size:8pt">العمر المصحح عند الخروج</label><div class="l"></div></div>
+      <div class="fld ar"><label style="font-family:'Cairo',Arial,sans-serif;text-transform:none;font-size:8pt">وزن الولادة غرام</label><div class="l"></div></div> <div class="fld ar"><label style="font-family:'Cairo',Arial,sans-serif;text-transform:none;font-size:8pt">وزن الخروج غرام</label><div class="l"></div></div>
+    </div>
+  </div>
+</div>
+<div class="sec" style="border-left:3px solid #1D4ED8">Diagnoses & Procedures <span style="font-family:'Cairo',Arial,sans-serif;font-size:7pt;font-weight:400">/ التشخيصات والإجراءات</span></div>
+<div class="gg2">
+  <div class="fld"><label>Primary Diagnosis <span style="font-family:'Cairo',Arial,sans-serif;font-size:6pt;color:#94a3b8;font-weight:400">/ التشخيص الرئيسي</span></label><div class="l2"></div></div> <div class="fld"><label>Secondary Diagnoses <span style="font-family:'Cairo',Arial,sans-serif;font-size:6pt;color:#94a3b8;font-weight:400">/ التشخيصات الثانوية</span></label><div class="l2"></div></div>
+  <div class="fld"><label>Procedures Performed <span style="font-family:'Cairo',Arial,sans-serif;font-size:6pt;color:#94a3b8;font-weight:400">/ الإجراءات المنجزة</span></label><div class="l2"></div></div>
+</div>
+<div class="sec" style="border-left:3px solid #1D4ED8">Discharge Medications <span style="font-family:'Cairo',Arial,sans-serif;font-size:7pt;font-weight:400">/ الأدوية عند الخروج</span></div>
+<table class="tbl">
+  <tr><th>Drug / الدواء</th><th style="width:80px">Dose /kg</th><th style="width:60px">Route</th><th style="width:80px">Frequency</th><th style="width:70px">Duration</th></tr>
+  <tr><td></td><td></td><td></td><td></td><td></td></tr><tr><td></td><td></td><td></td><td></td><td></td></tr><tr><td></td><td></td><td></td><td></td><td></td></tr>
+</table>
+<div class="sec" style="border-left:3px solid #1D4ED8">Parent Education <span style="font-family:'Cairo',Arial,sans-serif;font-size:7pt;font-weight:400">/ تثقيف الوالدين</span></div>
+<div class="cg2">
+  <div class="ci"><div class="cb"></div><span>Feeding instructions (breast/formula/tube) <span style="font-family:'Cairo',Arial,sans-serif;font-size:7.5pt;color:#475569">/ تعليمات الرضاعة</span></span></div>
+  <div class="ci"><div class="cb"></div><span>Temperature monitoring explained <span style="font-family:'Cairo',Arial,sans-serif;font-size:7.5pt;color:#475569">/ مراقبة الحرارة</span></span></div>
+  <div class="ci"><div class="cb"></div><span>Medication administration taught <span style="font-family:'Cairo',Arial,sans-serif;font-size:7.5pt;color:#475569">/ طريقة إعطاء الأدوية</span></span></div>
+  <div class="ci"><div class="cb"></div><span>Warning signs for emergency <span style="font-family:'Cairo',Arial,sans-serif;font-size:7.5pt;color:#475569">/ علامات التحذير</span></span></div>
+  <div class="ci"><div class="cb"></div><span>Follow-up appointment confirmed <span style="font-family:'Cairo',Arial,sans-serif;font-size:7.5pt;color:#475569">/ موعد المتابعة مؤكد</span></span></div>
+</div>
+<div class="sec" style="border-left:3px solid #1D4ED8">Follow-up <span style="font-family:'Cairo',Arial,sans-serif;font-size:7pt;font-weight:400">/ المتابعة</span></div>
+<div class="gg3">
+  <div class="fld"><label>Follow-up Date & Time <span style="font-family:'Cairo',Arial,sans-serif;font-size:6pt;color:#94a3b8;font-weight:400">/ موعد المتابعة</span></label><div class="l"></div></div> <div class="fld"><label>Paediatric Clinic <span style="font-family:'Cairo',Arial,sans-serif;font-size:6pt;color:#94a3b8;font-weight:400">/ عيادة طب الأطفال</span></label><div class="l"></div></div> <div class="fld"><label>Neonatologist <span style="font-family:'Cairo',Arial,sans-serif;font-size:6pt;color:#94a3b8;font-weight:400">/ طبيب الرضع</span></label><div class="l"></div></div>
+</div>
+<div class="sgr g3"><div class="sb"><div class="sl2"></div><div class="sl3">Neonatologist — Name & Signature<span style="font-family:'Cairo',Arial,sans-serif;font-size:6pt;font-weight:400"> / طبيب الرضع</span></div></div><div class="sb"><div class="sl2"></div><div class="sl3">NICU Nurse<span style="font-family:'Cairo',Arial,sans-serif;font-size:6pt;font-weight:400"> / ممرضة الوحدة</span></div></div><div class="sb"><div class="sl2"></div><div class="sl3">Parent / Guardian<span style="font-family:'Cairo',Arial,sans-serif;font-size:6pt;font-weight:400"> / الوليّ</span></div></div></div>
+</div>
+</div><div class="fp" id="picuchart" style="--c:#0F2557">
+<div class="fh" style="border-top:4px solid #0F2557">
+  <div class="logo-box"><div class="logo-inner"><span>Logo</span></div></div>
+  <div class="hc"><div class="hosp-name">Hospital Name</div><div class="hosp-line"></div>
+    <div class="ft" style="color:#0F2557">PICU Daily Chart / <span style="font-family:'Cairo',Arial,sans-serif;font-size:11pt">سجل العناية المركزة للأطفال اليومي</span></div>
+    <div class="fs">Vitals · Ventilator · Fluid Balance · Medications · Handover / <span style="font-family:'Cairo',Arial,sans-serif">علامات حيوية · تهوية · سوائل · أدوية · تسليم</span></div>
+  </div>
+  <div class="hr"><div class="fc" style="color:#0F2557">PICU-01</div><div class="fg">COP.6 · COP.9</div></div>
+</div>
+<div class="ps">
+  <div class="sc"><span class="sl">Patient Name / اسم المريض</span><div class="sv"></div></div>
+  <div class="sc"><span class="sl">MRN / رقم الملف</span><div class="sv"></div></div>
+  <div class="sc"><span class="sl">Date of Birth / تاريخ الميلاد</span><div class="sv"></div></div>
+  <div class="sc"><span class="sl">Blood Group / فصيلة الدم</span><div class="sv"></div></div>
+  <div class="sc"><span class="sl">Date / التاريخ</span><div class="sv"></div></div>
+</div>
+<div class="infect-bar" style="display:none"></div>
+<div class="rs" style="color:#0F2557;border-bottom:1px solid #0F2557">PICU-01 — PICU Daily Chart / سجل العناية المركزة للأطفال<span style="float:right">COP.6</span></div>
+<div class="body">
+<div class="gg4" style="margin-top:4px">
+  <div class="fld"><label>PICU Day No. <span style="font-family:'Cairo',Arial,sans-serif;font-size:6pt;color:#94a3b8;font-weight:400">/ يوم الوحدة</span></label><div class="l"></div></div> <div class="fld"><label>Date <span style="font-family:'Cairo',Arial,sans-serif;font-size:6pt;color:#94a3b8;font-weight:400">/ التاريخ</span></label><div class="l"></div></div> <div class="fld"><label>Age / Weight <span style="font-family:'Cairo',Arial,sans-serif;font-size:6pt;color:#94a3b8;font-weight:400">/ العمر / الوزن</span></label><div class="l"></div></div> <div class="fld"><label>Primary Diagnosis <span style="font-family:'Cairo',Arial,sans-serif;font-size:6pt;color:#94a3b8;font-weight:400">/ التشخيص</span></label><div class="l"></div></div>
+</div>
+<div class="sec" style="border-left:3px solid #0F2557">Hourly Vitals <span style="font-family:'Cairo',Arial,sans-serif;font-size:7pt;font-weight:400">/ العلامات الحيوية كل ساعة</span></div>
+<table class="tbl" style="font-size:7pt">
+  <tr>
+    <th style="width:30px">Time / الوقت</th>
+    <th style="width:38px">HR / النبض</th>
+    <th style="width:50px">BP / الضغط</th>
+    <th style="width:38px">SpO₂</th>
+    <th style="width:32px">RR</th>
+    <th style="width:38px">Temp / حرارة</th>
+    <th style="width:35px">GCS</th>
+    <th style="width:38px">Pain</th>
+    <th style="width:42px">FiO₂%</th>
+    <th>Notes / ملاحظات</th>
+  </tr>
+  <tr><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr><tr><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr><tr><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr><tr><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr><tr><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr><tr><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr><tr><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr><tr><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr><tr><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr><tr><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+</table>
+<div class="sec" style="border-left:3px solid #0F2557">Ventilator <span style="font-family:'Cairo',Arial,sans-serif;font-size:7pt;font-weight:400">/ التهوية</span></div>
+<div style="display:grid;grid-template-columns:repeat(5,1fr);gap:4px">
+  <div class="fld"><label>Mode <span style="font-family:'Cairo',Arial,sans-serif;font-size:6pt;color:#94a3b8;font-weight:400">/ الوضع</span></label><div class="l"></div></div> <div class="fld"><label>TV mL/kg <span style="font-family:'Cairo',Arial,sans-serif;font-size:6pt;color:#94a3b8;font-weight:400">/ الحجم</span></label><div class="l"></div></div> <div class="fld"><label>Rate /min <span style="font-family:'Cairo',Arial,sans-serif;font-size:6pt;color:#94a3b8;font-weight:400">/ التردد</span></label><div class="l"></div></div> <div class="fld"><label>PEEP <span style="font-family:'Cairo',Arial,sans-serif;font-size:6pt;color:#94a3b8;font-weight:400">/ الضغط النهائي</span></label><div class="l"></div></div> <div class="fld"><label>FiO₂ % <span style="font-family:'Cairo',Arial,sans-serif;font-size:6pt;color:#94a3b8;font-weight:400">/ الأكسجين</span></label><div class="l"></div></div>
+</div>
+<div class="sec" style="border-left:3px solid #0F2557">Fluid Balance <span style="font-family:'Cairo',Arial,sans-serif;font-size:7pt;font-weight:400">/ الميزان المائي</span></div>
+<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
+  <table class="tbl"><tr><th>Input / المدخلات</th><th style="width:65px">mL</th></tr>
+    <tr><td>IV Fluids / سوائل</td><td></td></tr><tr><td>Enteral Feeds / تغذية</td><td></td></tr><tr><td>Medications / أدوية</td><td></td></tr><tr><td>Blood Products / دم</td><td></td></tr><tr><td>Total Input / المجموع</td><td></td></tr>
+  </table>
+  <table class="tbl"><tr><th>Output / المخرجات</th><th style="width:65px">mL</th></tr>
+    <tr><td>Urine / البول</td><td></td></tr><tr><td>NG / Drain / مصرف</td><td></td></tr><tr><td>Other / أخرى</td><td></td></tr><tr><td>Net Balance / الصافي</td><td></td></tr>
+  </table>
+</div>
+<div class="sec" style="border-left:3px solid #0F2557">Medications <span style="font-family:'Cairo',Arial,sans-serif;font-size:7pt;font-weight:400">/ الأدوية</span></div>
+<table class="tbl">
+  <tr><th>Drug / الدواء</th><th style="width:80px">Dose /kg</th><th style="width:80px">Calculated</th><th style="width:55px">Route</th><th style="width:85px">Frequency</th><th style="width:55px">Nurse</th></tr>
+  <tr><td></td><td></td><td></td><td></td><td></td><td></td></tr><tr><td></td><td></td><td></td><td></td><td></td><td></td></tr><tr><td></td><td></td><td></td><td></td><td></td><td></td></tr><tr><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+</table>
+<div class="sec" style="border-left:3px solid #0F2557">Shift Handover — SBAR <span style="font-family:'Cairo',Arial,sans-serif;font-size:7pt;font-weight:400">/ تسليم الوردية</span></div>
+<div class="gg4" style="margin-top:4px">
+  <div class="fld"><label>Handover Time <span style="font-family:'Cairo',Arial,sans-serif;font-size:6pt;color:#94a3b8;font-weight:400">/ وقت التسليم</span></label><div class="l"></div></div> <div class="fld"><label>Outgoing Nurse <span style="font-family:'Cairo',Arial,sans-serif;font-size:6pt;color:#94a3b8;font-weight:400">/ المنصرفة</span></label><div class="l"></div></div> <div class="fld"><label>Incoming Nurse <span style="font-family:'Cairo',Arial,sans-serif;font-size:6pt;color:#94a3b8;font-weight:400">/ القادمة</span></label><div class="l"></div></div> <div class="fld"><label>Intensivist on Call <span style="font-family:'Cairo',Arial,sans-serif;font-size:6pt;color:#94a3b8;font-weight:400">/ الطبيب المناوب</span></label><div class="l"></div></div>
+</div>
+<div class="gg1">
+  <div class="fld"><label>S — Situation <span style="font-family:'Cairo',Arial,sans-serif;font-size:6pt;color:#94a3b8;font-weight:400">/ الحالة</span></label><div class="l"></div></div> <div class="fld"><label>B — Background <span style="font-family:'Cairo',Arial,sans-serif;font-size:6pt;color:#94a3b8;font-weight:400">/ الخلفية</span></label><div class="l"></div></div>
+  <div class="fld"><label>A — Assessment <span style="font-family:'Cairo',Arial,sans-serif;font-size:6pt;color:#94a3b8;font-weight:400">/ التقييم</span></label><div class="l"></div></div> <div class="fld"><label>R — Plan for next shift <span style="font-family:'Cairo',Arial,sans-serif;font-size:6pt;color:#94a3b8;font-weight:400">/ خطة الوردية القادمة</span></label><div class="l"></div></div>
+</div>
+<div style="display:grid;grid-template-columns:1fr 1px 1fr;gap:0;border-top:1.5px dashed #ccc;margin-top:5px">
+  <div style="padding:6px 10px">
+    <div style="font-size:7pt;font-weight:700;color:#0F2557;margin-bottom:4px">OUTGOING / <span style="font-family:'Cairo',Arial,sans-serif;font-weight:400">المنصرفة</span></div>
+    <div class="sgr g2"><div class="sb"><div class="sl2"></div><div class="sl3">PICU Nurse — Signature<span style="font-family:'Cairo',Arial,sans-serif;font-size:6pt;font-weight:400"> / ممرضة PICU</span></div></div><div class="sb"><div class="sl2"></div><div class="sl3">Intensivist Review<span style="font-family:'Cairo',Arial,sans-serif;font-size:6pt;font-weight:400"> / الطبيب</span></div></div></div>
+  </div>
+  <div style="background:#e2e8f0"></div>
+  <div style="padding:6px 10px">
+    <div style="font-size:7pt;font-weight:700;color:#0F2557;margin-bottom:4px">INCOMING / <span style="font-family:'Cairo',Arial,sans-serif;font-weight:400">القادمة</span></div>
+    <div class="sgr g2"><div class="sb"><div class="sl2"></div><div class="sl3">PICU Nurse — Signature & Time<span style="font-family:'Cairo',Arial,sans-serif;font-size:6pt;font-weight:400"> / ممرضة PICU والوقت</span></div></div><div class="sb"><div class="sl2"></div><div class="sl3"><span style="font-family:'Cairo',Arial,sans-serif;font-size:6pt;font-weight:400"> / </span></div></div></div>
+  </div>
+</div>
+</div>
+</div>
+</div>
+<script>
+
+var savedHospName='',savedLogoUrl=null;
+function showStop(id){
+  document.querySelectorAll('.stop').forEach(function(s){s.classList.remove('active');});
+  document.querySelectorAll('.stop-btn').forEach(function(b){b.classList.remove('active');});
+  document.getElementById('stop-'+id).classList.add('active');
+  document.querySelector('[data-stop="'+id+'"]').classList.add('active');
+}
+function printStop(id){
+  var nav=document.querySelector('.nav');
+  var legend=document.getElementById('pathway-legend');
+  var stops=document.querySelectorAll('.stop');
+  var target=document.getElementById('stop-'+id);
+  if(!target) return;
+  if(nav) nav.style.display='none';
+  if(legend) legend.style.display='none';
+  stops.forEach(function(s){s.style.display='none';});
+  target.style.display='block';
+  window.addEventListener('afterprint',function restore(){
+    if(nav) nav.style.display='';
+    if(legend) legend.style.display='';
+    stops.forEach(function(s){s.style.display='';});
+    var act=document.querySelector('.stop.active');
+    if(act) act.style.display='block';
+    window.removeEventListener('afterprint',restore);
+  });
+  window.print();
+}
+
+function openSettings(){document.getElementById('sp').style.display='flex';document.getElementById('si-n').value=savedHospName;}
+function closeSettings(){document.getElementById('sp').style.display='none';}
+function applySettings(){
+  var n=document.getElementById('si-n').value.trim();
+  if(n){savedHospName=n;document.querySelectorAll('.hosp-name').forEach(function(el){el.textContent=n;});}
+  var ld=document.getElementById('ld').value;
+  if(ld){savedLogoUrl=ld;document.querySelectorAll('.logo-box').forEach(function(b){b.innerHTML='<img src="'+ld+'" style="max-width:42px;max-height:42px;object-fit:contain;border-radius:3px">';});}
+  closeSettings();
+}
+document.getElementById('lf').addEventListener('change',function(){
+  var f=this.files[0];if(!f)return;
+  var r=new FileReader();
+  r.onload=function(e){document.getElementById('ld').value=e.target.result;document.getElementById('lp').src=e.target.result;document.getElementById('lp').style.display='block';};
+  r.readAsDataURL(f);
+});
+
+function printAll(){
+  var nav=document.querySelector('.nav');
+  if(nav) nav.style.display='none';
+  window.addEventListener('afterprint',function r(){
+    if(nav) nav.style.display='';
+    window.removeEventListener('afterprint',r);
+  });
+  window.print();
+}
+</script>
+</body>
+</html>

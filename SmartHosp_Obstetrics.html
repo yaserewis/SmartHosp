@@ -1,0 +1,684 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>SmartHosp — Obstetrics / التوليد</title>
+<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:"Segoe UI",Arial,sans-serif;font-size:10.5pt;color:#111;background:#f1f5f9}
+.ar{font-family:"Cairo",Arial,sans-serif;direction:rtl}
+/* Nav */
+.nav{background:#0F2557;color:white;padding:.4rem .75rem;display:flex;flex-wrap:wrap;gap:.3rem;align-items:center;position:sticky;top:0;z-index:100}
+.nav-title{font-size:.85rem;font-weight:700;margin-right:.5rem}
+.stop-btn{background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.2);color:white;padding:.25rem .65rem;border-radius:3px;cursor:pointer;font-size:.72rem;font-family:inherit}
+.stop-btn:hover,.stop-btn.active{background:white;color:#0F2557;font-weight:700}
+.print-btn{background:#059669;color:white;border:none;padding:.25rem .75rem;border-radius:3px;cursor:pointer;font-size:.72rem;font-weight:700;font-family:inherit}
+.settings-btn{background:rgba(255,255,255,.12);color:white;border:1px solid rgba(255,255,255,.2);padding:.25rem .65rem;border-radius:3px;cursor:pointer;font-size:.72rem;font-family:inherit}
+/* Stops */
+.stop{display:none}
+.stop.active{display:block}
+/* Form page */
+.fp{display:block;max-width:210mm;margin:0 auto .75rem;background:white;box-shadow:0 1px 6px rgba(0,0,0,.1);position:relative;overflow:hidden}
+.fp::before{content:"";position:absolute;top:0;left:0;right:0;height:4px;background:var(--c,#0F2557)}
+/* Form header */
+.fh{display:flex;align-items:stretch;min-height:55px}
+.fh.ar{direction:rtl}
+.logo-box{width:55px;border-right:1px solid #e2e8f0;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.logo-inner{width:42px;height:42px;border:1.5px dashed #ccc;border-radius:4px;display:flex;align-items:center;justify-content:center}
+.hc{flex:1;padding:5px 10px}
+.hc.ar{direction:rtl}
+.hosp-name{font-size:7pt;font-weight:700;color:#475569;text-transform:uppercase;letter-spacing:.05em}
+.hosp-line{border-bottom:1px solid #ccc;min-height:12px;margin-top:2px}
+.ft{font-size:12pt;font-weight:800;margin-top:3px}
+.ft.ar{font-family:"Cairo",Arial,sans-serif}
+.fs{font-size:7pt;color:#64748b;margin-top:1px}
+.fs.ar{font-family:"Cairo",Arial,sans-serif}
+.hr{width:80px;padding:5px 7px;text-align:right;display:flex;flex-direction:column;justify-content:space-between;border-left:1px solid #e2e8f0;flex-shrink:0}
+.fc{font-size:12pt;font-weight:900}
+.fg{font-size:6.5pt;color:#888}
+/* Patient strip */
+.ps{display:grid;grid-template-columns:2fr 1fr 1fr 1fr 1fr;border-bottom:1.5px solid #e2e8f0}
+.ps.ar{direction:rtl}
+.sc{padding:3px 7px;border-right:1px solid #e2e8f0}
+.sc:last-child{border-right:none}
+.sl{font-size:6pt;font-weight:700;color:#888;text-transform:uppercase;letter-spacing:.03em;display:block}
+.sl.ar{font-family:"Cairo",Arial,sans-serif;text-transform:none;font-size:7.5pt}
+.sv{border-bottom:1px solid #ccc;min-height:14px;margin-top:2px}
+/* Role stripe */
+.rs{padding:3px 10px;font-size:7pt;font-weight:600;color:#475569;border-bottom:1px solid #e2e8f0;overflow:hidden}
+.rs.ar{font-family:"Cairo",Arial,sans-serif;direction:rtl}
+/* Body */
+.body{padding:0 10px 6px}
+/* Section */
+.sec{font-size:7.5pt;font-weight:700;padding:3px 8px;margin-top:6px;color:#334155}
+/* Fields */
+.gg1{display:grid;gap:3px;margin-bottom:3px}
+.gg2{display:grid;grid-template-columns:1fr 1fr;gap:4px;margin-bottom:3px}
+.gg3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:4px;margin-bottom:3px}
+.gg4{display:grid;grid-template-columns:repeat(4,1fr);gap:4px;margin-bottom:3px}
+.fld{display:flex;flex-direction:column;gap:2px}
+.fld.ar{direction:rtl}
+.fld label{font-size:6.5pt;font-weight:700;color:#555;text-transform:uppercase;letter-spacing:.03em}
+.fld label.ar{font-family:"Cairo",Arial,sans-serif;text-transform:none;letter-spacing:0;font-size:8pt}
+.fld .l{border-bottom:1px solid #888;min-height:15px}
+.fld .l2{border-bottom:1px solid #888;min-height:26px}
+.fld .l3{border-bottom:1px solid #888;min-height:40px}
+/* Checkboxes */
+.cg1{display:grid;gap:2px;margin-bottom:3px}
+.cg2{display:grid;grid-template-columns:1fr 1fr;gap:2px;margin-bottom:3px}
+.cg3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:2px;margin-bottom:3px}
+.cg4{display:grid;grid-template-columns:repeat(4,1fr);gap:2px;margin-bottom:3px}
+.ci{display:flex;align-items:flex-start;gap:5px;font-size:8.5pt;padding:1px 0}
+.ci.ar{direction:rtl;font-family:"Cairo",Arial,sans-serif;font-size:9pt}
+.cb{width:11px;height:11px;border:1.5px solid #555;flex-shrink:0;margin-top:2px}
+/* Vitals */
+.vg{display:grid;grid-template-columns:repeat(10,1fr);gap:3px;padding:3px 0}
+.vc{border-bottom:1.5px solid #e2e8f0;padding:2px 3px;text-align:center}
+.vl{font-size:6pt;font-weight:700;color:#888;text-transform:uppercase;display:block}
+.vv{min-height:14px;border-bottom:1px solid #ccc;margin-top:1px}
+/* Tables */
+.tbl{width:100%;border-collapse:collapse;font-size:8pt;margin-bottom:3px}
+.tbl th{background:#f1f5f9;color:#334155;padding:3px 5px;text-align:left;font-size:7.5pt;font-weight:700;border-bottom:2px solid var(--c,#0F2557)}
+.tbl td{border-bottom:1px solid #f1f5f9;padding:3px 5px;height:18px}
+.tbl tr:nth-child(even) td{background:#fafafa}
+/* Signatures */
+.sgr{display:grid;gap:12px;padding:6px 10px;border-top:1.5px dashed #ccc;margin-top:5px}
+.g2{grid-template-columns:1fr 1fr}
+.g3{grid-template-columns:1fr 1fr 1fr}
+.sb{display:flex;flex-direction:column}
+.sb.ar{direction:rtl}
+.sl2{border-bottom:1px solid #334155;min-height:22px;margin-bottom:3px}
+.sl3{font-size:6pt;color:#666;text-transform:uppercase;letter-spacing:.03em}
+.sl3.ar{font-family:"Cairo",Arial,sans-serif;text-transform:none;letter-spacing:0;font-size:7pt}
+/* Settings */
+.settings-panel{display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:200;align-items:center;justify-content:center}
+.settings-inner{background:white;border-radius:8px;padding:1.25rem;max-width:400px;width:90%;box-shadow:0 20px 50px rgba(0,0,0,.3)}
+.settings-inner h3{font-size:.95rem;font-weight:700;color:#0f2557;margin-bottom:.75rem}
+.si-l{font-size:.75rem;font-weight:700;color:#555;display:block;margin-bottom:.25rem}
+.si-i{width:100%;border:1.5px solid #e2e8f0;border-radius:4px;padding:.4rem .6rem;font-size:.85rem;font-family:inherit;margin-bottom:.6rem}
+.si-b{display:flex;gap:.5rem;justify-content:flex-end;margin-top:.5rem}
+.btn-c{padding:.35rem .9rem;border:1.5px solid #e2e8f0;border-radius:4px;background:white;cursor:pointer;font-family:inherit;font-size:.8rem}
+.btn-a{padding:.35rem .9rem;background:#0f2557;color:white;border:none;border-radius:4px;cursor:pointer;font-family:inherit;font-size:.8rem;font-weight:700}
+/* Print */
+@media print{
+  .nav,.settings-panel,#pathway-legend{display:none!important}
+  .fp{page-break-after:always;page-break-inside:avoid}
+  .sgr{page-break-inside:avoid}
+  .body{padding-bottom:2px}
+  .sec{margin-top:3px;padding:2px 8px}
+  .gg1,.gg2,.gg3,.gg4{margin-bottom:2px}
+  .tbl td{height:14px;padding:1px 4px}
+  .fld .l{min-height:12px}
+  .fld .l2{min-height:19px}
+  .fld .l3{min-height:28px}
+  .fp{box-shadow:none!important;margin:0!important;page-break-after:always}
+  @page{margin:6mm;size:A4 portrait}
+  *{-webkit-print-color-adjust:exact!important;print-color-adjust:exact!important}
+}
+
+.nav{background:#0F2557;color:white;padding:.4rem .75rem;display:flex;flex-wrap:wrap;gap:.3rem;align-items:center;position:sticky;top:0;z-index:100}
+.nav-title{font-size:.85rem;font-weight:700;margin-right:.5rem}
+.stop-btn{background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.2);color:white;padding:.25rem .65rem;border-radius:3px;cursor:pointer;font-size:.72rem;font-family:inherit}
+.stop-btn.active,.stop-btn:hover{background:white;color:#0F2557;font-weight:700}
+.print-btn{background:#DC2626;color:white;border:none;padding:.25rem .75rem;border-radius:3px;cursor:pointer;font-size:.72rem;font-weight:700;font-family:inherit}
+.settings-btn{background:rgba(255,255,255,.12);color:white;border:1px solid rgba(255,255,255,.2);padding:.25rem .65rem;border-radius:3px;cursor:pointer;font-size:.72rem;font-family:inherit}
+.stop{display:none}.stop.active{display:block}
+.settings-panel{display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:200;align-items:center;justify-content:center}
+.settings-inner{background:white;border-radius:8px;padding:1.25rem;max-width:400px;width:90%;box-shadow:0 20px 50px rgba(0,0,0,.3)}
+.settings-inner h3{font-size:.95rem;font-weight:700;color:#0f2557;margin-bottom:.75rem}
+.si-l{font-size:.75rem;font-weight:700;color:#555;display:block;margin-bottom:.25rem}
+.si-i{width:100%;border:1.5px solid #e2e8f0;border-radius:4px;padding:.4rem .6rem;font-size:.85rem;font-family:inherit;margin-bottom:.6rem}
+.si-b{display:flex;gap:.5rem;justify-content:flex-end;margin-top:.5rem}
+.btn-c{padding:.35rem .9rem;border:1.5px solid #e2e8f0;border-radius:4px;background:white;cursor:pointer;font-family:inherit;font-size:.8rem}
+.btn-a{padding:.35rem .9rem;background:#0f2557;color:white;border:none;border-radius:4px;cursor:pointer;font-family:inherit;font-size:.8rem;font-weight:700}
+@media print{.nav,#pathway-legend,.settings-panel{display:none!important}.fp{page-break-after:always;page-break-inside:avoid}.sgr{page-break-inside:avoid}@page{margin:6mm;size:A4 portrait}*{-webkit-print-color-adjust:exact!important;print-color-adjust:exact!important}}
+</style>
+</head>
+<body>
+<div class="nav">
+  <span class="nav-title">🤱 SmartHosp — Obstetrics / التوليد</span>
+  <button class="print-btn" onclick="printAll()">🖨 Print All / طباعة</button>
+  <button class="settings-btn" onclick="openSettings()">⚙ Hospital / المستشفى</button>
+</div>
+
+<div class="settings-panel" id="sp">
+  <div class="settings-inner">
+    <h3>⚙ Hospital Settings</h3>
+    <label class="si-l">Hospital Name / اسم المستشفى</label>
+    <input type="text" id="si-n" class="si-i" placeholder="Enter hospital name">
+    <label class="si-l">Logo Image / الشعار</label>
+    <input type="file" id="lf" accept="image/*" style="font-size:.8rem;margin-bottom:.4rem">
+    <input type="hidden" id="ld">
+    <img id="lp" style="display:none;max-height:50px;max-width:140px;border:1px solid #e2e8f0;border-radius:4px;margin-bottom:.5rem">
+    <div class="si-b">
+      <button class="btn-c" onclick="closeSettings()">Cancel</button>
+      <button class="btn-a" onclick="applySettings()">Apply to All / تطبيق</button>
+    </div>
+  </div>
+</div>
+<div class="stop active" id="stop-ob">
+<div class="fp" id="idblk" style="--c:#D97706">
+<div class="fh" style="border-top:4px solid #D97706">
+  <div class="logo-box"><div class="logo-inner"><span>Logo</span></div></div>
+  <div class="hc"><div class="hosp-name">Hospital Name</div><div class="hosp-line"></div>
+    <div class="ft" style="color:#D97706">Patient ID Band / <span style="font-family:'Cairo',Arial,sans-serif;font-size:11pt">سوار التعريف</span></div>
+    <div class="fs">6 per sheet · Cut along dashed line · NSR.01 / <span style="font-family:'Cairo',Arial,sans-serif">تُعبأ يدوياً · تُقطع وتُثبَّت على المعصم</span></div>
+  </div>
+  <div class="hr"><div class="fc" style="color:#D97706">ID-BLK</div><div class="fg">NSR.01</div></div>
+</div>
+<div class="ps">
+  <div class="sc"><span class="sl">Patient Name / اسم المريض</span><div class="sv"></div></div>
+  <div class="sc"><span class="sl">MRN / رقم الملف</span><div class="sv"></div></div>
+  <div class="sc"><span class="sl">Date of Birth / تاريخ الميلاد</span><div class="sv"></div></div>
+  <div class="sc"><span class="sl">Blood Group / فصيلة الدم</span><div class="sv"></div></div>
+  <div class="sc"><span class="sl">Date / التاريخ</span><div class="sv"></div></div>
+</div>
+<div style="padding:4px 10px;font-size:7pt;color:#555;background:#fffbeb;border-bottom:1px solid #e2e8f0">
+  Write Name + MRN + DOB + Allergy. Fill red □ if infection precautions apply. Verify 2 identifiers at every intervention — NSR.01
+</div>
+<div class="body" style="padding:6px 10px"><div style="border:1.5px solid #334155;border-radius:4px;display:grid;grid-template-columns:38px 1fr 22px;min-height:36px;margin-bottom:3px;border-bottom:2px dashed #94a3b8">
+  <div style="border-right:1px solid #e2e8f0;display:flex;align-items:center;justify-content:center;padding:2px"><div style="width:30px;height:30px;border:1px dashed #ccc;border-radius:3px;display:flex;align-items:center;justify-content:center"><span class="hosp-name" style="font-size:4pt;color:#bbb;text-align:center;line-height:1.2">Logo</span></div></div>
+  <div style="padding:3px 6px;display:flex;flex-direction:column;gap:2px">
+    <div style="font-size:5pt;font-weight:700;color:#475569" class="hosp-name">Hospital Name</div>
+    <div style="border-bottom:1.5px solid #334155;min-height:11px"></div>
+    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:4px">
+      <div><div style="font-size:4.5pt;font-weight:700;color:#888">MRN</div><div style="border-bottom:1px solid #888;min-height:9px"></div></div>
+      <div><div style="font-size:4.5pt;font-weight:700;color:#888">DOB</div><div style="border-bottom:1px solid #888;min-height:9px"></div></div>
+      <div><div style="font-size:4.5pt;font-weight:700;color:#888">ALLERGY ⚠</div><div style="border-bottom:1px solid #888;min-height:9px"></div></div>
+    </div>
+  </div>
+  <div style="border-left:1px solid #e2e8f0;display:flex;align-items:center;justify-content:center">
+    <div style="width:14px;height:14px;border:2px solid #DC2626;border-radius:2px"></div>
+  </div>
+</div><div style="border:1.5px solid #334155;border-radius:4px;display:grid;grid-template-columns:38px 1fr 22px;min-height:36px;margin-bottom:3px;border-bottom:2px dashed #94a3b8">
+  <div style="border-right:1px solid #e2e8f0;display:flex;align-items:center;justify-content:center;padding:2px"><div style="width:30px;height:30px;border:1px dashed #ccc;border-radius:3px;display:flex;align-items:center;justify-content:center"><span class="hosp-name" style="font-size:4pt;color:#bbb;text-align:center;line-height:1.2">Logo</span></div></div>
+  <div style="padding:3px 6px;display:flex;flex-direction:column;gap:2px">
+    <div style="font-size:5pt;font-weight:700;color:#475569" class="hosp-name">Hospital Name</div>
+    <div style="border-bottom:1.5px solid #334155;min-height:11px"></div>
+    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:4px">
+      <div><div style="font-size:4.5pt;font-weight:700;color:#888">MRN</div><div style="border-bottom:1px solid #888;min-height:9px"></div></div>
+      <div><div style="font-size:4.5pt;font-weight:700;color:#888">DOB</div><div style="border-bottom:1px solid #888;min-height:9px"></div></div>
+      <div><div style="font-size:4.5pt;font-weight:700;color:#888">ALLERGY ⚠</div><div style="border-bottom:1px solid #888;min-height:9px"></div></div>
+    </div>
+  </div>
+  <div style="border-left:1px solid #e2e8f0;display:flex;align-items:center;justify-content:center">
+    <div style="width:14px;height:14px;border:2px solid #DC2626;border-radius:2px"></div>
+  </div>
+</div><div style="border:1.5px solid #334155;border-radius:4px;display:grid;grid-template-columns:38px 1fr 22px;min-height:36px;margin-bottom:3px;border-bottom:2px dashed #94a3b8">
+  <div style="border-right:1px solid #e2e8f0;display:flex;align-items:center;justify-content:center;padding:2px"><div style="width:30px;height:30px;border:1px dashed #ccc;border-radius:3px;display:flex;align-items:center;justify-content:center"><span class="hosp-name" style="font-size:4pt;color:#bbb;text-align:center;line-height:1.2">Logo</span></div></div>
+  <div style="padding:3px 6px;display:flex;flex-direction:column;gap:2px">
+    <div style="font-size:5pt;font-weight:700;color:#475569" class="hosp-name">Hospital Name</div>
+    <div style="border-bottom:1.5px solid #334155;min-height:11px"></div>
+    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:4px">
+      <div><div style="font-size:4.5pt;font-weight:700;color:#888">MRN</div><div style="border-bottom:1px solid #888;min-height:9px"></div></div>
+      <div><div style="font-size:4.5pt;font-weight:700;color:#888">DOB</div><div style="border-bottom:1px solid #888;min-height:9px"></div></div>
+      <div><div style="font-size:4.5pt;font-weight:700;color:#888">ALLERGY ⚠</div><div style="border-bottom:1px solid #888;min-height:9px"></div></div>
+    </div>
+  </div>
+  <div style="border-left:1px solid #e2e8f0;display:flex;align-items:center;justify-content:center">
+    <div style="width:14px;height:14px;border:2px solid #DC2626;border-radius:2px"></div>
+  </div>
+</div><div style="border:1.5px solid #334155;border-radius:4px;display:grid;grid-template-columns:38px 1fr 22px;min-height:36px;margin-bottom:3px;border-bottom:2px dashed #94a3b8">
+  <div style="border-right:1px solid #e2e8f0;display:flex;align-items:center;justify-content:center;padding:2px"><div style="width:30px;height:30px;border:1px dashed #ccc;border-radius:3px;display:flex;align-items:center;justify-content:center"><span class="hosp-name" style="font-size:4pt;color:#bbb;text-align:center;line-height:1.2">Logo</span></div></div>
+  <div style="padding:3px 6px;display:flex;flex-direction:column;gap:2px">
+    <div style="font-size:5pt;font-weight:700;color:#475569" class="hosp-name">Hospital Name</div>
+    <div style="border-bottom:1.5px solid #334155;min-height:11px"></div>
+    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:4px">
+      <div><div style="font-size:4.5pt;font-weight:700;color:#888">MRN</div><div style="border-bottom:1px solid #888;min-height:9px"></div></div>
+      <div><div style="font-size:4.5pt;font-weight:700;color:#888">DOB</div><div style="border-bottom:1px solid #888;min-height:9px"></div></div>
+      <div><div style="font-size:4.5pt;font-weight:700;color:#888">ALLERGY ⚠</div><div style="border-bottom:1px solid #888;min-height:9px"></div></div>
+    </div>
+  </div>
+  <div style="border-left:1px solid #e2e8f0;display:flex;align-items:center;justify-content:center">
+    <div style="width:14px;height:14px;border:2px solid #DC2626;border-radius:2px"></div>
+  </div>
+</div><div style="border:1.5px solid #334155;border-radius:4px;display:grid;grid-template-columns:38px 1fr 22px;min-height:36px;margin-bottom:3px;border-bottom:2px dashed #94a3b8">
+  <div style="border-right:1px solid #e2e8f0;display:flex;align-items:center;justify-content:center;padding:2px"><div style="width:30px;height:30px;border:1px dashed #ccc;border-radius:3px;display:flex;align-items:center;justify-content:center"><span class="hosp-name" style="font-size:4pt;color:#bbb;text-align:center;line-height:1.2">Logo</span></div></div>
+  <div style="padding:3px 6px;display:flex;flex-direction:column;gap:2px">
+    <div style="font-size:5pt;font-weight:700;color:#475569" class="hosp-name">Hospital Name</div>
+    <div style="border-bottom:1.5px solid #334155;min-height:11px"></div>
+    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:4px">
+      <div><div style="font-size:4.5pt;font-weight:700;color:#888">MRN</div><div style="border-bottom:1px solid #888;min-height:9px"></div></div>
+      <div><div style="font-size:4.5pt;font-weight:700;color:#888">DOB</div><div style="border-bottom:1px solid #888;min-height:9px"></div></div>
+      <div><div style="font-size:4.5pt;font-weight:700;color:#888">ALLERGY ⚠</div><div style="border-bottom:1px solid #888;min-height:9px"></div></div>
+    </div>
+  </div>
+  <div style="border-left:1px solid #e2e8f0;display:flex;align-items:center;justify-content:center">
+    <div style="width:14px;height:14px;border:2px solid #DC2626;border-radius:2px"></div>
+  </div>
+</div><div style="border:1.5px solid #334155;border-radius:4px;display:grid;grid-template-columns:38px 1fr 22px;min-height:36px;margin-bottom:3px">
+  <div style="border-right:1px solid #e2e8f0;display:flex;align-items:center;justify-content:center;padding:2px"><div style="width:30px;height:30px;border:1px dashed #ccc;border-radius:3px;display:flex;align-items:center;justify-content:center"><span class="hosp-name" style="font-size:4pt;color:#bbb;text-align:center;line-height:1.2">Logo</span></div></div>
+  <div style="padding:3px 6px;display:flex;flex-direction:column;gap:2px">
+    <div style="font-size:5pt;font-weight:700;color:#475569" class="hosp-name">Hospital Name</div>
+    <div style="border-bottom:1.5px solid #334155;min-height:11px"></div>
+    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:4px">
+      <div><div style="font-size:4.5pt;font-weight:700;color:#888">MRN</div><div style="border-bottom:1px solid #888;min-height:9px"></div></div>
+      <div><div style="font-size:4.5pt;font-weight:700;color:#888">DOB</div><div style="border-bottom:1px solid #888;min-height:9px"></div></div>
+      <div><div style="font-size:4.5pt;font-weight:700;color:#888">ALLERGY ⚠</div><div style="border-bottom:1px solid #888;min-height:9px"></div></div>
+    </div>
+  </div>
+  <div style="border-left:1px solid #e2e8f0;display:flex;align-items:center;justify-content:center">
+    <div style="width:14px;height:14px;border:2px solid #DC2626;border-radius:2px"></div>
+  </div>
+</div></div>
+</div><div class="fp" id="ob01" style="--c:#0891B2">
+<div class="fh" style="border-top:4px solid #0891B2">
+  <div class="logo-box"><div class="logo-inner"><span>Logo</span></div></div>
+  <div class="hc"><div class="hosp-name">Hospital Name</div><div class="hosp-line"></div>
+    <div class="ft" style="color:#0891B2">Obstetric Admission / <span style="font-family:'Cairo',Arial,sans-serif;font-size:11pt">قبول الحامل</span></div>
+    <div class="fs">Obstetric History · Labour Assessment · Risk Scoring / <span style="font-family:'Cairo',Arial,sans-serif">تاريخ الحمل والولادة · تقييم المخاض · تقييم المخاطر</span></div>
+  </div>
+  <div class="hr"><div class="fc" style="color:#0891B2">OB-01</div><div class="fg">COP.1 · ACC.1</div></div>
+</div>
+<div class="ps">
+  <div class="sc"><span class="sl">Patient Name / اسم المريض</span><div class="sv"></div></div>
+  <div class="sc"><span class="sl">MRN / رقم الملف</span><div class="sv"></div></div>
+  <div class="sc"><span class="sl">Date of Birth / تاريخ الميلاد</span><div class="sv"></div></div>
+  <div class="sc"><span class="sl">Blood Group / فصيلة الدم</span><div class="sv"></div></div>
+  <div class="sc"><span class="sl">Date / التاريخ</span><div class="sv"></div></div>
+</div>
+<div class="infect-bar" style="display:none"></div>
+<div class="rs" style="color:#0891B2;border-bottom:1px solid #0891B2">OB-01 — Obstetric Admission / قبول الحامل<span style="float:right">COP.1 · ACC.1</span></div>
+<div class="body">
+<div class="sec" style="border-left:3px solid #0891B2">Admission Details <span style="font-family:'Cairo',Arial,sans-serif;font-size:7pt;font-weight:400">/ بيانات القبول</span></div>
+<div class="gg4">
+  <div class="fld"><label>Admission Date & Time <span style="font-family:'Cairo',Arial,sans-serif;font-size:6pt;color:#94a3b8;font-weight:400">/ تاريخ ووقت القبول</span></label><div class="l"></div></div> <div class="fld"><label>Gestational Age (weeks+days) <span style="font-family:'Cairo',Arial,sans-serif;font-size:6pt;color:#94a3b8;font-weight:400">/ عمر الحمل</span></label><div class="l"></div></div>
+  <div class="fld"><label>Gravida / Para <span style="font-family:'Cairo',Arial,sans-serif;font-size:6pt;color:#94a3b8;font-weight:400">/ عدد الحمل / الولادة</span></label><div class="l"></div></div> <div class="fld"><label>Referral Source <span style="font-family:'Cairo',Arial,sans-serif;font-size:6pt;color:#94a3b8;font-weight:400">/ مصدر التحويل</span></label><div class="l"></div></div>
+  <div class="fld"><label>Chief Complaint * <span style="font-family:'Cairo',Arial,sans-serif;font-size:6pt;color:#94a3b8;font-weight:400">/ الشكوى الرئيسية</span></label><div class="l"></div></div> <div class="fld"><label>EDD (by dates / USS) <span style="font-family:'Cairo',Arial,sans-serif;font-size:6pt;color:#94a3b8;font-weight:400">/ الميعاد المتوقع</span></label><div class="l"></div></div>
+  <div class="fld"><label>GBS Status <span style="font-family:'Cairo',Arial,sans-serif;font-size:6pt;color:#94a3b8;font-weight:400">/ حالة العقديات</span></label><div class="l"></div></div> <div class="fld"><label>Booking Status <span style="font-family:'Cairo',Arial,sans-serif;font-size:6pt;color:#94a3b8;font-weight:400">/ حالة الحجز</span></label><div class="l"></div></div>
+</div>
+<div class="sec" style="border-left:3px solid #0891B2">Obstetric & Medical History <span style="font-family:'Cairo',Arial,sans-serif;font-size:7pt;font-weight:400">/ تاريخ الحمل والولادة</span></div>
+<div class="gg3">
+  <div class="fld"><label>Current Pregnancy Complications <span style="font-family:'Cairo',Arial,sans-serif;font-size:6pt;color:#94a3b8;font-weight:400">/ مضاعفات الحمل الحالي</span></label><div class="l2"></div></div>
+  <div class="fld"><label>Previous Obstetric History <span style="font-family:'Cairo',Arial,sans-serif;font-size:6pt;color:#94a3b8;font-weight:400">/ التاريخ التوليدي السابق</span></label><div class="l2"></div></div>
+  <div class="fld"><label>Medical / Surgical History <span style="font-family:'Cairo',Arial,sans-serif;font-size:6pt;color:#94a3b8;font-weight:400">/ التاريخ الطبي والجراحي</span></label><div class="l2"></div></div>
+  <div class="fld"><label>Current Medications <span style="font-family:'Cairo',Arial,sans-serif;font-size:6pt;color:#94a3b8;font-weight:400">/ الأدوية الحالية</span></label><div class="l2"></div></div>
+  <div class="fld"><label>Allergies <span style="font-family:'Cairo',Arial,sans-serif;font-size:6pt;color:#94a3b8;font-weight:400">/ الحساسية</span></label><div class="l"></div></div> <div class="fld"><label>Blood Group & Antibody Screen <span style="font-family:'Cairo',Arial,sans-serif;font-size:6pt;color:#94a3b8;font-weight:400">/ فصيلة الدم والأجسام المضادة</span></label><div class="l"></div></div>
+</div>
+<div class="sec" style="border-left:3px solid #0891B2">Labour Assessment <span style="font-family:'Cairo',Arial,sans-serif;font-size:7pt;font-weight:400">/ تقييم المخاض</span></div>
+<div class="gg4">
+  <div class="fld"><label>Onset of Labour <span style="font-family:'Cairo',Arial,sans-serif;font-size:6pt;color:#94a3b8;font-weight:400">/ بداية المخاض</span></label><div class="l"></div></div> <div class="fld"><label>Membrane Status <span style="font-family:'Cairo',Arial,sans-serif;font-size:6pt;color:#94a3b8;font-weight:400">/ حالة الأغشية</span></label><div class="l"></div></div>
+  <div class="fld"><label>Time of Rupture <span style="font-family:'Cairo',Arial,sans-serif;font-size:6pt;color:#94a3b8;font-weight:400">/ وقت الانفجار</span></label><div class="l"></div></div> <div class="fld"><label>Liquor Colour <span style="font-family:'Cairo',Arial,sans-serif;font-size:6pt;color:#94a3b8;font-weight:400">/ لون السائل</span></label><div class="l"></div></div>
+</div>
+<div class="vg" style="grid-template-columns:repeat(6,1fr)">
+  <div class="vc"><span class="vl">BP</span><div class="vv"></div></div>
+  <div class="vc"><span class="vl">HR</span><div class="vv"></div></div>
+  <div class="vc"><span class="vl">Temp</span><div class="vv"></div></div>
+  <div class="vc"><span class="vl">SpO₂</span><div class="vv"></div></div>
+  <div class="vc"><span class="vl">Urinalysis</span><div class="vv"></div></div>
+  <div class="vc"><span class="vl">Pain NRS</span><div class="vv"></div></div>
+</div>
+<div class="sec" style="border-left:3px solid #0891B2">Vaginal Examination <span style="font-family:'Cairo',Arial,sans-serif;font-size:7pt;font-weight:400">/ الفحص المهبلي</span></div>
+<div class="gg4">
+  <div class="fld"><label>Dilation (cm) <span style="font-family:'Cairo',Arial,sans-serif;font-size:6pt;color:#94a3b8;font-weight:400">/ الاتساع</span></label><div class="l"></div></div> <div class="fld"><label>Effacement (%) <span style="font-family:'Cairo',Arial,sans-serif;font-size:6pt;color:#94a3b8;font-weight:400">/ الامحاء</span></label><div class="l"></div></div> <div class="fld"><label>Station <span style="font-family:'Cairo',Arial,sans-serif;font-size:6pt;color:#94a3b8;font-weight:400">/ نزول الرأس</span></label><div class="l"></div></div> <div class="fld"><label>Presentation / Position <span style="font-family:'Cairo',Arial,sans-serif;font-size:6pt;color:#94a3b8;font-weight:400">/ الوضعة</span></label><div class="l"></div></div>
+</div>
+<div class="sec" style="border-left:3px solid #0891B2">Fetal Assessment <span style="font-family:'Cairo',Arial,sans-serif;font-size:7pt;font-weight:400">/ تقييم الجنين</span></div>
+<div class="gg4">
+  <div class="fld"><label>FHR (bpm) <span style="font-family:'Cairo',Arial,sans-serif;font-size:6pt;color:#94a3b8;font-weight:400">/ نبضات الجنين</span></label><div class="l"></div></div> <div class="fld"><label>CTG Category I/II/III <span style="font-family:'Cairo',Arial,sans-serif;font-size:6pt;color:#94a3b8;font-weight:400">/ تصنيف CTG</span></label><div class="l"></div></div> <div class="fld"><label>Presentation (USS confirmed) <span style="font-family:'Cairo',Arial,sans-serif;font-size:6pt;color:#94a3b8;font-weight:400">/ الوضعة بالموجات</span></label><div class="l"></div></div> <div class="fld"><label>EFW (g) <span style="font-family:'Cairo',Arial,sans-serif;font-size:6pt;color:#94a3b8;font-weight:400">/ الوزن التقديري</span></label><div class="l"></div></div>
+</div>
+<div class="sec" style="border-left:3px solid #0891B2">Obstetric Risk Scoring <span style="font-family:'Cairo',Arial,sans-serif;font-size:7pt;font-weight:400">/ تقييم مخاطر الحمل</span></div>
+<div class="gg3">
+  <div>
+    <div class="cg2">
+      <div class="ci"><div class="cb"></div><span>Pre-eclampsia / HTN <span style="font-family:'Cairo',Arial,sans-serif;font-size:7.5pt;color:#475569">/ تسمم حمل / ضغط</span></span></div> <div class="ci"><div class="cb"></div><span>Gestational Diabetes <span style="font-family:'Cairo',Arial,sans-serif;font-size:7.5pt;color:#475569">/ سكري الحمل</span></span></div>
+      <div class="ci"><div class="cb"></div><span>Previous LSCS <span style="font-family:'Cairo',Arial,sans-serif;font-size:7.5pt;color:#475569">/ قيصرية سابقة</span></span></div> <div class="ci"><div class="cb"></div><span>Malpresentation <span style="font-family:'Cairo',Arial,sans-serif;font-size:7.5pt;color:#475569">/ سوء الوضعة</span></span></div>
+      <div class="ci"><div class="cb"></div><span>Multiple Pregnancy <span style="font-family:'Cairo',Arial,sans-serif;font-size:7.5pt;color:#475569">/ حمل متعدد</span></span></div> <div class="ci"><div class="cb"></div><span>Placenta Praevia / Abruption <span style="font-family:'Cairo',Arial,sans-serif;font-size:7.5pt;color:#475569">/ مشيمة منزاحة</span></span></div>
+      <div class="ci"><div class="cb"></div><span>Preterm < 37 weeks <span style="font-family:'Cairo',Arial,sans-serif;font-size:7.5pt;color:#475569">/ ولادة مبكرة</span></span></div> <div class="ci"><div class="cb"></div><span>Post-term > 41 weeks <span style="font-family:'Cairo',Arial,sans-serif;font-size:7.5pt;color:#475569">/ حمل متأخر</span></span></div>
+      <div class="ci"><div class="cb"></div><span>Anaemia Hb < 8 <span style="font-family:'Cairo',Arial,sans-serif;font-size:7.5pt;color:#475569">/ فقر الدم</span></span></div>
+    </div>
+  </div>
+  <div class="gg1" style="grid-column:span 2">
+    <div class="fld"><label>Admission Plan <span style="font-family:'Cairo',Arial,sans-serif;font-size:6pt;color:#94a3b8;font-weight:400">/ خطة القبول</span></label><div class="l2"></div></div>
+    <div class="fld"><label>Obstetrician Notified <span style="font-family:'Cairo',Arial,sans-serif;font-size:6pt;color:#94a3b8;font-weight:400">/ إشعار طبيب النساء</span></label><div class="l"></div></div>
+  </div>
+</div>
+<div class="sgr g3"><div class="sb"><div class="sl2"></div><div class="sl3">Midwife / Admitting Nurse<span style="font-family:'Cairo',Arial,sans-serif;font-size:6pt;font-weight:400"> / القابلة / الممرضة</span></div></div><div class="sb"><div class="sl2"></div><div class="sl3">Obstetrician<span style="font-family:'Cairo',Arial,sans-serif;font-size:6pt;font-weight:400"> / طبيب النساء والتوليد</span></div></div><div class="sb"><div class="sl2"></div><div class="sl3">Date & Time<span style="font-family:'Cairo',Arial,sans-serif;font-size:6pt;font-weight:400"> / التاريخ والوقت</span></div></div></div>
+</div>
+</div><div class="fp" id="ob02" style="--c:#0891B2">
+<div class="fh" style="border-top:4px solid #0891B2">
+  <div class="logo-box"><div class="logo-inner"><span>Logo</span></div></div>
+  <div class="hc"><div class="hosp-name">Hospital Name</div><div class="hosp-line"></div>
+    <div class="ft" style="color:#0891B2">Partogram / <span style="font-family:'Cairo',Arial,sans-serif;font-size:11pt">منحنى المخاض</span></div>
+    <div class="fs">WHO Modified · Alert & Action Lines</div>
+  </div>
+  <div class="hr"><div class="fc" style="color:#0891B2">OB-02</div><div class="fg">COP.1 · COP.8</div></div>
+</div>
+<div class="ps">
+  <div class="sc"><span class="sl">Patient Name / اسم المريض</span><div class="sv"></div></div>
+  <div class="sc"><span class="sl">MRN / رقم الملف</span><div class="sv"></div></div>
+  <div class="sc"><span class="sl">Date of Birth / تاريخ الميلاد</span><div class="sv"></div></div>
+  <div class="sc"><span class="sl">Blood Group / فصيلة الدم</span><div class="sv"></div></div>
+  <div class="sc"><span class="sl">Date / التاريخ</span><div class="sv"></div></div>
+</div>
+<div class="infect-bar" style="display:none"></div>
+<div class="rs" style="color:#0891B2;border-bottom:1px solid #0891B2">OB-02 — Partogram / منحنى المخاض<span style="float:right">COP.1 · COP.8</span></div>
+<div class="body">
+<div class="gg4"><div class="fld"><label>Date Labour Commenced</label><div class="l"></div></div><div class="fld"><label>Time Commenced</label><div class="l"></div></div><div class="fld"><label>Dilation at Start cm</label><div class="l"></div></div><div class="fld"><label>Gestation weeks</label><div class="l"></div></div></div>
+<div style="font-size:6.5pt;color:#555;margin:2px 0"><span style="color:#DC2626;font-weight:700">— Alert Line:</span> ≥1cm/hr from 4cm &nbsp; <span style="color:#DC2626;font-weight:700">— Action Line:</span> 4h right of alert</div>
+<table style="width:100%;border-collapse:collapse;font-size:6.5pt;margin-bottom:3px">
+  <thead>
+    <tr>
+      <td style="width:80px;background:#f8fafc;border:1px solid #e2e8f0"></td>
+      <th colspan="2" style="background:#0891B2;color:white;border:1px solid #ccc;text-align:center;font-size:6pt;padding:2px">0h</th><th colspan="2" style="background:#0891B2;color:white;border:1px solid #ccc;text-align:center;font-size:6pt;padding:2px">1h</th><th colspan="2" style="background:#0891B2;color:white;border:1px solid #ccc;text-align:center;font-size:6pt;padding:2px">2h</th><th colspan="2" style="background:#0891B2;color:white;border:1px solid #ccc;text-align:center;font-size:6pt;padding:2px">3h</th><th colspan="2" style="background:#0891B2;color:white;border:1px solid #ccc;text-align:center;font-size:6pt;padding:2px">4h</th><th colspan="2" style="background:#0891B2;color:white;border:1px solid #ccc;text-align:center;font-size:6pt;padding:2px">5h</th><th colspan="2" style="background:#0891B2;color:white;border:1px solid #ccc;text-align:center;font-size:6pt;padding:2px">6h</th><th colspan="2" style="background:#0891B2;color:white;border:1px solid #ccc;text-align:center;font-size:6pt;padding:2px">7h</th><th colspan="2" style="background:#0891B2;color:white;border:1px solid #ccc;text-align:center;font-size:6pt;padding:2px">8h</th><th colspan="2" style="background:#0891B2;color:white;border:1px solid #ccc;text-align:center;font-size:6pt;padding:2px">9h</th><th colspan="2" style="background:#0891B2;color:white;border:1px solid #ccc;text-align:center;font-size:6pt;padding:2px">10h</th><th colspan="2" style="background:#0891B2;color:white;border:1px solid #ccc;text-align:center;font-size:6pt;padding:2px">11h</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr><td style="background:#f8fafc;text-align:right;font-size:6.5pt;font-weight:700">10</td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr><tr><td style="background:#f8fafc;text-align:right;font-size:6.5pt;font-weight:700">9</td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr><tr><td style="background:#f8fafc;text-align:right;font-size:6.5pt;font-weight:700">8</td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr><tr><td style="background:#f8fafc;text-align:right;font-size:6.5pt;font-weight:700">7</td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr><tr><td style="background:#f8fafc;text-align:right;font-size:6.5pt;font-weight:700">6</td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr><tr><td style="background:#f8fafc;text-align:right;font-size:6.5pt;font-weight:700">5</td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr><tr><td style="background:#f8fafc;text-align:right;font-size:6.5pt;font-weight:700">4</td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr><tr><td style="background:#f8fafc;text-align:right;font-size:6.5pt;font-weight:700">3</td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr><tr><td style="background:#f8fafc;text-align:right;font-size:6.5pt;font-weight:700">2</td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr><tr><td style="background:#f8fafc;text-align:right;font-size:6.5pt;font-weight:700">1</td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+    <tr><td style="background:#f8fafc;font-size:6.5pt;font-weight:600">Descent 5/5</td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr><tr><td style="background:#f8fafc;font-size:6.5pt;font-weight:600">FHR (bpm)</td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr><tr><td style="background:#f8fafc;font-size:6.5pt;font-weight:600">Liquor C/M/B</td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr><tr><td style="background:#f8fafc;font-size:6.5pt;font-weight:600">Contractions /10min</td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr><tr><td style="background:#f8fafc;font-size:6.5pt;font-weight:600">Duration sec</td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr><tr><td style="background:#f8fafc;font-size:6.5pt;font-weight:600">Oxytocin mU/min</td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr><tr><td style="background:#f8fafc;font-size:6.5pt;font-weight:600">BP</td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr><tr><td style="background:#f8fafc;font-size:6.5pt;font-weight:600">Pulse</td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr><tr><td style="background:#f8fafc;font-size:6.5pt;font-weight:600">Temp °C</td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+  </tbody>
+</table>
+<div style="font-size:6pt;color:#555">Liquor: C=Clear · M=Meconium · B=Blood · A=Absent &nbsp;|&nbsp; Descent: 5/5=free, 0/5=engaged</div>
+<div class="sgr g3"><div class="sb"><div class="sl2"></div><div class="sl3">Midwife / Nurse in Charge<span style="font-family:'Cairo',Arial,sans-serif;font-size:6pt;font-weight:400"> / القابلة</span></div></div><div class="sb"><div class="sl2"></div><div class="sl3">Obstetrician Review<span style="font-family:'Cairo',Arial,sans-serif;font-size:6pt;font-weight:400"> / طبيب النساء</span></div></div><div class="sb"><div class="sl2"></div><div class="sl3">Date & Time<span style="font-family:'Cairo',Arial,sans-serif;font-size:6pt;font-weight:400"> / التاريخ والوقت</span></div></div></div>
+</div>
+</div><div class="fp" id="ob03" style="--c:#0891B2">
+<div class="fh" style="border-top:4px solid #0891B2">
+  <div class="logo-box"><div class="logo-inner"><span>Logo</span></div></div>
+  <div class="hc"><div class="hosp-name">Hospital Name</div><div class="hosp-line"></div>
+    <div class="ft" style="color:#0891B2">Delivery Note / <span style="font-family:'Cairo',Arial,sans-serif;font-size:11pt">ملاحظة الولادة</span></div>
+    <div class="fs">Mode · Stage Durations · PPH · Placenta · Post-delivery Vitals</div>
+  </div>
+  <div class="hr"><div class="fc" style="color:#0891B2">OB-03</div><div class="fg">COP.8 · MR.4</div></div>
+</div>
+<div class="ps">
+  <div class="sc"><span class="sl">Patient Name / اسم المريض</span><div class="sv"></div></div>
+  <div class="sc"><span class="sl">MRN / رقم الملف</span><div class="sv"></div></div>
+  <div class="sc"><span class="sl">Date of Birth / تاريخ الميلاد</span><div class="sv"></div></div>
+  <div class="sc"><span class="sl">Blood Group / فصيلة الدم</span><div class="sv"></div></div>
+  <div class="sc"><span class="sl">Date / التاريخ</span><div class="sv"></div></div>
+</div>
+<div class="infect-bar" style="display:none"></div>
+<div class="rs" style="color:#0891B2;border-bottom:1px solid #0891B2">OB-03 — Delivery Note / ملاحظة الولادة<span style="float:right">COP.8</span></div>
+<div class="body">
+<div class="sec" style="border-left:3px solid #0891B2">Delivery Details</div>
+<div class="gg3">
+  <div class="fld"><label>Date of Delivery</label><div class="l"></div></div> <div class="fld"><label>Time of Delivery</label><div class="l"></div></div> <div class="fld"><label>Gestational Age weeks</label><div class="l"></div></div>
+  <div class="fld"><label>Mode of Delivery *</label><div class="l"></div></div> <div class="fld"><label>Indication (if LSCS)</label><div class="l"></div></div> <div class="fld"><label>Delivered By</label><div class="l"></div></div>
+  <div class="fld"><label>Analgesia</label><div class="l"></div></div> <div class="fld"><label>Estimated Blood Loss mL</label><div class="l"></div></div> <div class="fld"><label>PPH</label><div class="l"></div></div>
+</div>
+<div class="sec" style="border-left:3px solid #0891B2">3rd Stage & Perineum</div>
+<div class="gg3">
+  <div class="fld"><label>Placenta Delivery</label><div class="l"></div></div> <div class="fld"><label>Oxytocin 3rd stage</label><div class="l"></div></div> <div class="fld"><label>Perineum / Episiotomy</label><div class="l"></div></div>
+  <div class="fld"><label>Complications</label><div class="l2"></div></div>
+</div>
+<div class="sec" style="border-left:3px solid #0891B2">Post-Delivery Maternal Vitals</div>
+<div class="vg" style="grid-template-columns:repeat(6,1fr)">
+  <div class="vc"><span class="vl">BP</span><div class="vv"></div></div>
+  <div class="vc"><span class="vl">HR</span><div class="vv"></div></div>
+  <div class="vc"><span class="vl">SpO₂</span><div class="vv"></div></div>
+  <div class="vc"><span class="vl">Temp</span><div class="vv"></div></div>
+  <div class="vc"><span class="vl">Uterus Tone</span><div class="vv"></div></div>
+  <div class="vc"><span class="vl">Lochia</span><div class="vv"></div></div>
+</div>
+<div class="sgr g3"><div class="sb"><div class="sl2"></div><div class="sl3">Delivering Physician / Midwife<span style="font-family:'Cairo',Arial,sans-serif;font-size:6pt;font-weight:400"> / الطبيب / القابلة</span></div></div><div class="sb"><div class="sl2"></div><div class="sl3">Assisting Nurse<span style="font-family:'Cairo',Arial,sans-serif;font-size:6pt;font-weight:400"> / الممرضة</span></div></div><div class="sb"><div class="sl2"></div><div class="sl3">Date & Time<span style="font-family:'Cairo',Arial,sans-serif;font-size:6pt;font-weight:400"> / التاريخ والوقت</span></div></div></div>
+</div>
+</div><div class="fp" id="ob04" style="--c:#0891B2">
+<div class="fh" style="border-top:4px solid #0891B2">
+  <div class="logo-box"><div class="logo-inner"><span>Logo</span></div></div>
+  <div class="hc"><div class="hosp-name">Hospital Name</div><div class="hosp-line"></div>
+    <div class="ft" style="color:#0891B2">Newborn Registration / <span style="font-family:'Cairo',Arial,sans-serif;font-size:11pt">تسجيل المولود</span></div>
+    <div class="fs">Apgar · Resuscitation · Civil Registration / <span style="font-family:'Cairo',Arial,sans-serif">أبغار · إنعاش · التسجيل المدني</span></div>
+  </div>
+  <div class="hr"><div class="fc" style="color:#0891B2">OB-04</div><div class="fg">MR.1 · NSR.01</div></div>
+</div>
+<div class="ps">
+  <div class="sc"><span class="sl">Patient Name / اسم المريض</span><div class="sv"></div></div>
+  <div class="sc"><span class="sl">MRN / رقم الملف</span><div class="sv"></div></div>
+  <div class="sc"><span class="sl">Date of Birth / تاريخ الميلاد</span><div class="sv"></div></div>
+  <div class="sc"><span class="sl">Blood Group / فصيلة الدم</span><div class="sv"></div></div>
+  <div class="sc"><span class="sl">Date / التاريخ</span><div class="sv"></div></div>
+</div>
+<div class="infect-bar" style="display:none"></div>
+<div class="rs" style="color:#0891B2;border-bottom:1px solid #0891B2">OB-04 — Newborn Registration / تسجيل المولود<span style="float:right">MR.1 · NSR.01</span></div>
+<div class="body">
+<div style="display:grid;grid-template-columns:1fr 1px 1fr;gap:0">
+  <div style="padding:0 8px">
+    <div class="sec" style="border-left:3px solid #0891B2">Newborn Identity</div>
+    <div class="gg2" style="margin-top:4px">
+      <div class="fld"><label>Baby's Full Name / اسم المولود</label><div class="l"></div></div> <div class="fld"><label>Gender / الجنس</label><div class="l"></div></div>
+      <div class="fld"><label>Time of Birth</label><div class="l"></div></div> <div class="fld"><label>Gestational Age weeks</label><div class="l"></div></div>
+      <div class="fld"><label>Birth Weight g</label><div class="l"></div></div> <div class="fld"><label>Length cm</label><div class="l"></div></div>
+      <div class="fld"><label>Head Circumference cm</label><div class="l"></div></div> <div class="fld"><label>Mother's MRN</label><div class="l"></div></div>
+    </div>
+  </div>
+  <div style="background:#e2e8f0"></div>
+  <div style="padding:0 8px;direction:rtl">
+    <div class="sec ar" style="border-right:3px solid #0891B2;border-left:none;font-family:'Cairo',Arial,sans-serif;text-transform:none;direction:rtl;text-align:right">بيانات التسجيل المدني</div>
+    <div style="direction:rtl;margin-top:4px">
+      <div class="fld ar"><label style="font-family:'Cairo',Arial,sans-serif;text-transform:none;font-size:8pt">اسم الأب الكامل</label><div class="l"></div></div> <div class="fld ar"><label style="font-family:'Cairo',Arial,sans-serif;text-transform:none;font-size:8pt">الرقم القومي للأب</label><div class="l"></div></div>
+      <div class="fld ar"><label style="font-family:'Cairo',Arial,sans-serif;text-transform:none;font-size:8pt">اسم الأم الكاملة</label><div class="l"></div></div> <div class="fld ar"><label style="font-family:'Cairo',Arial,sans-serif;text-transform:none;font-size:8pt">الرقم القومي للأم</label><div class="l"></div></div>
+      <div class="fld ar"><label style="font-family:'Cairo',Arial,sans-serif;text-transform:none;font-size:8pt">الجنسية</label><div class="l"></div></div> <div class="fld ar"><label style="font-family:'Cairo',Arial,sans-serif;text-transform:none;font-size:8pt">الديانة</label><div class="l"></div></div>
+      <div class="fld ar"><label style="font-family:'Cairo',Arial,sans-serif;text-transform:none;font-size:8pt">رقم التسجيل المدني</label><div class="l"></div></div>
+    </div>
+  </div>
+</div>
+<div class="sec" style="border-left:3px solid #0891B2">Apgar Score</div>
+<table class="tbl">
+  <tr><th>Parameter</th><th>0</th><th>1</th><th>2</th><th style="width:65px">1 min</th><th style="width:65px">5 min</th><th style="width:65px">10 min</th></tr>
+  <tr><td>Heart Rate</td><td>Absent</td><td>&lt;100</td><td>≥100</td><td></td><td></td><td></td></tr>
+  <tr><td>Respiratory Effort</td><td>Absent</td><td>Weak</td><td>Strong cry</td><td></td><td></td><td></td></tr>
+  <tr><td>Muscle Tone</td><td>Limp</td><td>Some flexion</td><td>Active</td><td></td><td></td><td></td></tr>
+  <tr><td>Reflex Irritability</td><td>None</td><td>Grimace</td><td>Cry</td><td></td><td></td><td></td></tr>
+  <tr><td>Colour</td><td>Blue / pale</td><td>Blue extremities</td><td>Pink</td><td></td><td></td><td></td></tr>
+  <tr><td colspan="4" style="font-weight:700">Total</td><td></td><td></td><td></td></tr>
+</table>
+<div class="sec" style="border-left:3px solid #0891B2">Resuscitation & Prophylaxis</div>
+<div class="cg3">
+  <div class="ci"><div class="cb"></div><span>Resuscitation required <span style="font-family:'Cairo',Arial,sans-serif;font-size:7.5pt;color:#475569">/ الإنعاش مطلوب</span></span></div> <div class="ci"><div class="cb"></div><span>Vitamin K given <span style="font-family:'Cairo',Arial,sans-serif;font-size:7.5pt;color:#475569">/ فيتامين K أُعطي</span></span></div> <div class="ci"><div class="cb"></div><span>Eye prophylaxis given <span style="font-family:'Cairo',Arial,sans-serif;font-size:7.5pt;color:#475569">/ وقاية العينين</span></span></div>
+  <div class="ci"><div class="cb"></div><span>Hepatitis B vaccine given <span style="font-family:'Cairo',Arial,sans-serif;font-size:7.5pt;color:#475569">/ تطعيم التهاب الكبد B</span></span></div> <div class="ci"><div class="cb"></div><span>Wristband applied <span style="font-family:'Cairo',Arial,sans-serif;font-size:7.5pt;color:#475569">/ سوار المعصم مُثبَّت</span></span></div> <div class="ci"><div class="cb"></div><span>Mother-baby bands matched ✓ <span style="font-family:'Cairo',Arial,sans-serif;font-size:7.5pt;color:#475569">/ تطابق سوار الأم والمولود</span></span></div>
+</div>
+<div class="gg2"><div class="fld"><label>Feeding at Birth <span style="font-family:'Cairo',Arial,sans-serif;font-size:6pt;color:#94a3b8;font-weight:400">/ الرضاعة عند الولادة</span></label><div class="l"></div></div> <div class="fld"><label>Admitted To <span style="font-family:'Cairo',Arial,sans-serif;font-size:6pt;color:#94a3b8;font-weight:400">/ نُقل إلى</span></label><div class="l"></div></div></div>
+<div class="sgr g3"><div class="sb"><div class="sl2"></div><div class="sl3">Attending Physician / Midwife<span style="font-family:'Cairo',Arial,sans-serif;font-size:6pt;font-weight:400"> / الطبيب / القابلة</span></div></div><div class="sb"><div class="sl2"></div><div class="sl3">Paediatrician<span style="font-family:'Cairo',Arial,sans-serif;font-size:6pt;font-weight:400"> / طبيب الأطفال</span></div></div><div class="sb"><div class="sl2"></div><div class="sl3">Date & Time<span style="font-family:'Cairo',Arial,sans-serif;font-size:6pt;font-weight:400"> / التاريخ والوقت</span></div></div></div>
+</div>
+</div><div class="fp" id="ob05" style="--c:#059669">
+<div class="fh" style="border-top:4px solid #059669">
+  <div class="logo-box"><div class="logo-inner"><span>Logo</span></div></div>
+  <div class="hc"><div class="hosp-name">Hospital Name</div><div class="hosp-line"></div>
+    <div class="ft" style="color:#059669">Postpartum Assessment / <span style="font-family:'Cairo',Arial,sans-serif;font-size:11pt">تقييم ما بعد الولادة</span></div>
+    <div class="fs">Uterine Tone · Lochia · Breastfeeding · VTE · Wound</div>
+  </div>
+  <div class="hr"><div class="fc" style="color:#059669">OB-05</div><div class="fg">COP.2 · MR.3</div></div>
+</div>
+<div class="ps">
+  <div class="sc"><span class="sl">Patient Name / اسم المريض</span><div class="sv"></div></div>
+  <div class="sc"><span class="sl">MRN / رقم الملف</span><div class="sv"></div></div>
+  <div class="sc"><span class="sl">Date of Birth / تاريخ الميلاد</span><div class="sv"></div></div>
+  <div class="sc"><span class="sl">Blood Group / فصيلة الدم</span><div class="sv"></div></div>
+  <div class="sc"><span class="sl">Date / التاريخ</span><div class="sv"></div></div>
+</div>
+<div class="infect-bar" style="display:none"></div>
+<div class="rs" style="color:#059669;border-bottom:1px solid #059669">OB-05 — Postpartum Assessment / تقييم ما بعد الولادة<span style="float:right">COP.2</span></div>
+<div class="body">
+<div class="sec" style="border-left:3px solid #059669">Assessment Log <span style="font-family:'Cairo',Arial,sans-serif;font-size:7pt;font-weight:400">/ سجل التقييم</span></div>
+<table class="tbl">
+  <tr>
+    <th style="width:50px">Period / <span style="font-family:'Cairo',Arial,sans-serif;font-weight:400;text-transform:none">الفترة</span></th>
+    <th style="width:45px">BP</th><th style="width:35px">HR</th>
+    <th style="width:80px">Fundal Height / <span style="font-family:'Cairo',Arial,sans-serif;font-weight:400;text-transform:none">ارتفاع الرحم</span></th>
+    <th style="width:75px">Uterine Tone / <span style="font-family:'Cairo',Arial,sans-serif;font-weight:400;text-transform:none">انقباض الرحم</span></th>
+    <th style="width:65px">Lochia / <span style="font-family:'Cairo',Arial,sans-serif;font-weight:400;text-transform:none">النفاس</span></th>
+    <th style="width:80px">Breastfeeding / <span style="font-family:'Cairo',Arial,sans-serif;font-weight:400;text-transform:none">الرضاعة</span></th>
+    <th style="width:70px">VTE Prophy.</th>
+    <th>Nurse / <span style="font-family:'Cairo',Arial,sans-serif;font-weight:400;text-transform:none">ممرضة</span></th>
+  </tr>
+  <tr><td style="font-weight:600">2h</td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr><tr><td style="font-weight:600">Day 1</td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr><tr><td style="font-weight:600">Day 2</td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr><tr><td style="font-weight:600">Day 3</td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr><tr><td style="font-weight:600">Day 4</td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr><tr><td style="font-weight:600"></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+</table>
+<div class="sec" style="border-left:3px solid #059669">Wound Assessment <span style="font-family:'Cairo',Arial,sans-serif;font-size:7pt;font-weight:400">/ تقييم الجرح</span></div>
+<table class="tbl">
+  <tr>
+    <th style="width:65px">Date / <span style="font-family:'Cairo',Arial,sans-serif;font-weight:400;text-transform:none">التاريخ</span></th>
+    <th>Site Condition / <span style="font-family:'Cairo',Arial,sans-serif;font-weight:400;text-transform:none">حالة الجرح</span></th>
+    <th style="width:100px">Dressing Change / <span style="font-family:'Cairo',Arial,sans-serif;font-weight:400;text-transform:none">تغيير الضمادة</span></th>
+    <th style="width:80px">Assessed By / <span style="font-family:'Cairo',Arial,sans-serif;font-weight:400;text-transform:none">بواسطة</span></th>
+  </tr>
+  <tr><td></td><td></td><td></td><td></td></tr><tr><td></td><td></td><td></td><td></td></tr><tr><td></td><td></td><td></td><td></td></tr><tr><td></td><td></td><td></td><td></td></tr>
+</table>
+<div class="sgr g3"><div class="sb"><div class="sl2"></div><div class="sl3">Assessing Nurse / Midwife<span style="font-family:'Cairo',Arial,sans-serif;font-size:6pt;font-weight:400"> / الممرضة / القابلة</span></div></div><div class="sb"><div class="sl2"></div><div class="sl3">Physician Review<span style="font-family:'Cairo',Arial,sans-serif;font-size:6pt;font-weight:400"> / مراجعة الطبيب</span></div></div><div class="sb"><div class="sl2"></div><div class="sl3">Date & Time<span style="font-family:'Cairo',Arial,sans-serif;font-size:6pt;font-weight:400"> / التاريخ والوقت</span></div></div></div>
+</div>
+</div><div class="fp" id="ob06" style="--c:#DC2626">
+<div class="fh" style="border-top:4px solid #DC2626">
+  <div class="logo-box"><div class="logo-inner"><span>Logo</span></div></div>
+  <div class="hc"><div class="hosp-name">Hospital Name</div><div class="hosp-line"></div>
+    <div class="ft" style="color:#DC2626">Delivery Suite → Theater Referral / <span style="font-family:'Cairo',Arial,sans-serif;font-size:11pt">إحالة إلى غرفة العمليات</span></div>
+    <div class="fs">Emergency / Urgent LSCS · Obstetric Emergency Handover</div>
+  </div>
+  <div class="hr"><div class="fc" style="color:#DC2626">OB-06</div><div class="fg">ASC.5 · COP.9</div></div>
+</div>
+<div class="ps">
+  <div class="sc"><span class="sl">Patient Name / اسم المريض</span><div class="sv"></div></div>
+  <div class="sc"><span class="sl">MRN / رقم الملف</span><div class="sv"></div></div>
+  <div class="sc"><span class="sl">Date of Birth / تاريخ الميلاد</span><div class="sv"></div></div>
+  <div class="sc"><span class="sl">Blood Group / فصيلة الدم</span><div class="sv"></div></div>
+  <div class="sc"><span class="sl">Date / التاريخ</span><div class="sv"></div></div>
+</div>
+<div class="infect-bar" style="display:none"></div>
+<div class="rs" style="color:#DC2626;border-bottom:1px solid #DC2626">OB-06 — Delivery Suite → Theater / إحالة للعمليات<span style="float:right">ASC.5 · COP.9</span></div>
+<div class="body">
+<div class="sec" style="border-left:3px solid #DC2626">LSCS Category</div>
+<div style="display:grid;grid-template-columns:repeat(4,1fr);gap:5px;margin:4px 0">
+  <div style="border:1.5px solid #DC2626;border-radius:4px;padding:5px;text-align:center"><div class="ci" style="justify-content:center"><div class="cb"></div></div><div style="font-size:8.5pt;font-weight:800;color:#DC2626">Cat 1</div><div style="font-size:6.5pt;color:#555">Immediate ≤30min</div></div><div style="border:1.5px solid #D97706;border-radius:4px;padding:5px;text-align:center"><div class="ci" style="justify-content:center"><div class="cb"></div></div><div style="font-size:8.5pt;font-weight:800;color:#D97706">Cat 2</div><div style="font-size:6.5pt;color:#555">Urgent ≤75min</div></div><div style="border:1.5px solid #059669;border-radius:4px;padding:5px;text-align:center"><div class="ci" style="justify-content:center"><div class="cb"></div></div><div style="font-size:8.5pt;font-weight:800;color:#059669">Cat 3</div><div style="font-size:6.5pt;color:#555">Scheduled</div></div><div style="border:1.5px solid #1D4ED8;border-radius:4px;padding:5px;text-align:center"><div class="ci" style="justify-content:center"><div class="cb"></div></div><div style="font-size:8.5pt;font-weight:800;color:#1D4ED8">Cat 4</div><div style="font-size:6.5pt;color:#555">Elective</div></div>
+</div>
+<div class="gg2"><div class="fld"><label>Indication * <span style="font-family:'Cairo',Arial,sans-serif;font-size:6pt;color:#94a3b8;font-weight:400">/ المؤشر</span></label><div class="l2"></div></div> <div class="fld"><label>Decision to Theater Time <span style="font-family:'Cairo',Arial,sans-serif;font-size:6pt;color:#94a3b8;font-weight:400">/ وقت القرار</span></label><div class="l"></div></div></div>
+<div class="sec" style="border-left:3px solid #DC2626">Maternal Status</div>
+<div class="vg" style="grid-template-columns:repeat(6,1fr)">
+  <div class="vc"><span class="vl">BP</span><div class="vv"></div></div>
+  <div class="vc"><span class="vl">HR</span><div class="vv"></div></div>
+  <div class="vc"><span class="vl">SpO₂</span><div class="vv"></div></div>
+  <div class="vc"><span class="vl">Temp</span><div class="vv"></div></div>
+  <div class="vc"><span class="vl">Pain NRS</span><div class="vv"></div></div>
+  <div class="vc"><span class="vl">GCS</span><div class="vv"></div></div>
+</div>
+<div class="gg3"><div class="fld"><label>Est. Blood Loss mL</label><div class="l"></div></div> <div class="fld"><label>IV Access</label><div class="l"></div></div> <div class="fld"><label>Hb g/dL</label><div class="l"></div></div></div>
+<div class="sec" style="border-left:3px solid #DC2626">Fetal Status</div>
+<div class="gg4"><div class="fld"><label>FHR bpm</label><div class="l"></div></div> <div class="fld"><label>CTG Category</label><div class="l"></div></div> <div class="fld"><label>Gestation weeks</label><div class="l"></div></div> <div class="fld"><label>Presentation</label><div class="l"></div></div></div>
+<div class="sec" style="border-left:3px solid #DC2626">Pre-Theater Checklist</div>
+<div class="cg2">
+  <div class="ci"><div class="cb"></div><span>Consent obtained and signed <span style="font-family:'Cairo',Arial,sans-serif;font-size:7.5pt;color:#475569">/ الموافقة موقعة</span></span></div>
+  <div class="ci"><div class="cb"></div><span>Anaesthesiologist notified — GA / Spinal / Epidural <span style="font-family:'Cairo',Arial,sans-serif;font-size:7.5pt;color:#475569">/ طبيب التخدير أُشعر</span></span></div>
+  <div class="ci"><div class="cb"></div><span>Blood group & cross-match available <span style="font-family:'Cairo',Arial,sans-serif;font-size:7.5pt;color:#475569">/ المطابقة متاحة</span></span></div>
+  <div class="ci"><div class="cb"></div><span>Neonatologist / NICU alerted <span style="font-family:'Cairo',Arial,sans-serif;font-size:7.5pt;color:#475569">/ طبيب حديثي الولادة أُشعر</span></span></div>
+  <div class="ci"><div class="cb"></div><span>IV access confirmed — Foley inserted <span style="font-family:'Cairo',Arial,sans-serif;font-size:7.5pt;color:#475569">/ الكانيولا وقسطرة البول</span></span></div>
+  <div class="ci"><div class="cb"></div><span>Patient identification confirmed <span style="font-family:'Cairo',Arial,sans-serif;font-size:7.5pt;color:#475569">/ هوية المريضة مؤكدة</span></span></div>
+</div>
+<div class="gg4"><div class="fld"><label>Decision Time</label><div class="l"></div></div> <div class="fld"><label>Transfer to Theater Time</label><div class="l"></div></div> <div class="fld"><label>Knife to Skin Time</label><div class="l"></div></div> <div class="fld"><label>Decision-to-Delivery min</label><div class="l"></div></div></div>
+<div class="sgr g3"><div class="sb"><div class="sl2"></div><div class="sl3">Obstetrician<span style="font-family:'Cairo',Arial,sans-serif;font-size:6pt;font-weight:400"> / طبيب النساء والتوليد</span></div></div><div class="sb"><div class="sl2"></div><div class="sl3">Midwife / Nurse<span style="font-family:'Cairo',Arial,sans-serif;font-size:6pt;font-weight:400"> / القابلة / الممرضة</span></div></div><div class="sb"><div class="sl2"></div><div class="sl3">Anaesthesiologist<span style="font-family:'Cairo',Arial,sans-serif;font-size:6pt;font-weight:400"> / طبيب التخدير</span></div></div></div>
+</div>
+</div><div class="fp" id="ob07" style="--c:#1D4ED8">
+<div class="fh" style="border-top:4px solid #1D4ED8">
+  <div class="logo-box"><div class="logo-inner"><span>Logo</span></div></div>
+  <div class="hc"><div class="hosp-name">Hospital Name</div><div class="hosp-line"></div>
+    <div class="ft" style="color:#1D4ED8">Postpartum Discharge Summary / <span style="font-family:'Cairo',Arial,sans-serif;font-size:11pt">ملخص الخروج بعد الولادة</span></div>
+    <div class="fs">Diagnosis · Medications · Follow-up · Newborn Instructions / <span style="font-family:'Cairo',Arial,sans-serif">التشخيص · الأدوية · المتابعة · تعليمات الوليد</span></div>
+  </div>
+  <div class="hr"><div class="fc" style="color:#1D4ED8">OB-07</div><div class="fg">COP.10 · NSR.13</div></div>
+</div>
+<div class="ps">
+  <div class="sc"><span class="sl">Patient Name / اسم المريض</span><div class="sv"></div></div>
+  <div class="sc"><span class="sl">MRN / رقم الملف</span><div class="sv"></div></div>
+  <div class="sc"><span class="sl">Date of Birth / تاريخ الميلاد</span><div class="sv"></div></div>
+  <div class="sc"><span class="sl">Blood Group / فصيلة الدم</span><div class="sv"></div></div>
+  <div class="sc"><span class="sl">Date / التاريخ</span><div class="sv"></div></div>
+</div>
+<div class="infect-bar" style="display:none"></div>
+<div class="rs" style="color:#1D4ED8;border-bottom:1px solid #1D4ED8">OB-07 — Postpartum Discharge / ملخص الخروج بعد الولادة<span style="float:right">COP.10</span></div>
+<div class="body">
+<div style="display:grid;grid-template-columns:1fr 1px 1fr;gap:0">
+  <div style="padding:0 8px">
+    <div class="gg2" style="margin-top:4px">
+      <div class="fld"><label>Admission Date</label><div class="l"></div></div> <div class="fld"><label>Discharge Date</label><div class="l"></div></div>
+      <div class="fld"><label>Mode of Delivery</label><div class="l"></div></div> <div class="fld"><label>Discharge Condition</label><div class="l"></div></div>
+      <div class="fld"><label>Maternal Diagnosis</label><div class="l"></div></div> <div class="fld"><label>Neonatal Outcome</label><div class="l"></div></div>
+    </div>
+  </div>
+  <div style="background:#e2e8f0"></div>
+  <div style="padding:0 8px;direction:rtl">
+    <div style="margin-top:4px;direction:rtl">
+      <div class="fld ar"><label style="font-family:'Cairo',Arial,sans-serif;text-transform:none;font-size:8pt">تاريخ القبول</label><div class="l"></div></div> <div class="fld ar"><label style="font-family:'Cairo',Arial,sans-serif;text-transform:none;font-size:8pt">تاريخ الخروج</label><div class="l"></div></div>
+      <div class="fld ar"><label style="font-family:'Cairo',Arial,sans-serif;text-transform:none;font-size:8pt">طريقة الولادة</label><div class="l"></div></div> <div class="fld ar"><label style="font-family:'Cairo',Arial,sans-serif;text-transform:none;font-size:8pt">حالة الخروج</label><div class="l"></div></div>
+      <div class="fld ar"><label style="font-family:'Cairo',Arial,sans-serif;text-transform:none;font-size:8pt">تشخيص الأم</label><div class="l"></div></div> <div class="fld ar"><label style="font-family:'Cairo',Arial,sans-serif;text-transform:none;font-size:8pt">حالة الوليد</label><div class="l"></div></div>
+    </div>
+  </div>
+</div>
+<div class="sec" style="border-left:3px solid #1D4ED8">Discharge Medications <span style="font-family:'Cairo',Arial,sans-serif;font-size:7pt;font-weight:400">/ الأدوية عند الخروج</span></div>
+<table class="tbl">
+  <tr><th>Drug / الدواء</th><th style="width:70px">Dose</th><th style="width:55px">Route</th><th style="width:90px">Frequency / التكرار</th><th style="width:70px">Duration / المدة</th></tr>
+  <tr><td></td><td></td><td></td><td></td><td></td></tr><tr><td></td><td></td><td></td><td></td><td></td></tr><tr><td></td><td></td><td></td><td></td><td></td></tr><tr><td></td><td></td><td></td><td></td><td></td></tr>
+</table>
+<div class="sec" style="border-left:3px solid #1D4ED8">Patient Education <span style="font-family:'Cairo',Arial,sans-serif;font-size:7pt;font-weight:400">/ تثقيف المريضة</span></div>
+<div class="cg2">
+  <div class="ci"><div class="cb"></div><span>Wound care instructions given <span style="font-family:'Cairo',Arial,sans-serif;font-size:7.5pt;color:#475569">/ تعليمات العناية بالجرح</span></span></div>
+  <div class="ci"><div class="cb"></div><span>Breastfeeding support provided <span style="font-family:'Cairo',Arial,sans-serif;font-size:7.5pt;color:#475569">/ دعم الرضاعة الطبيعية</span></span></div>
+  <div class="ci"><div class="cb"></div><span>Family planning counselling <span style="font-family:'Cairo',Arial,sans-serif;font-size:7.5pt;color:#475569">/ إرشادات تنظيم الأسرة</span></span></div>
+  <div class="ci"><div class="cb"></div><span>When to return to emergency <span style="font-family:'Cairo',Arial,sans-serif;font-size:7.5pt;color:#475569">/ متى تعود للطوارئ</span></span></div>
+  <div class="ci"><div class="cb"></div><span>Newborn care instructions given <span style="font-family:'Cairo',Arial,sans-serif;font-size:7.5pt;color:#475569">/ تعليمات رعاية المولود</span></span></div>
+  <div class="ci"><div class="cb"></div><span>Follow-up appointment confirmed <span style="font-family:'Cairo',Arial,sans-serif;font-size:7.5pt;color:#475569">/ تأكيد موعد المتابعة</span></span></div>
+</div>
+<div class="sec" style="border-left:3px solid #1D4ED8">Follow-up <span style="font-family:'Cairo',Arial,sans-serif;font-size:7pt;font-weight:400">/ المتابعة</span></div>
+<div class="gg3">
+  <div class="fld"><label>Follow-up Appointment Date & Time <span style="font-family:'Cairo',Arial,sans-serif;font-size:6pt;color:#94a3b8;font-weight:400">/ موعد المتابعة</span></label><div class="l"></div></div>
+  <div class="fld"><label>Clinic / Physician <span style="font-family:'Cairo',Arial,sans-serif;font-size:6pt;color:#94a3b8;font-weight:400">/ العيادة / الطبيب</span></label><div class="l"></div></div>
+  <div class="fld"><label>Newborn Paediatric Follow-up <span style="font-family:'Cairo',Arial,sans-serif;font-size:6pt;color:#94a3b8;font-weight:400">/ متابعة المولود</span></label><div class="l"></div></div>
+</div>
+<div class="sgr g3"><div class="sb"><div class="sl2"></div><div class="sl3">Discharging Physician<span style="font-family:'Cairo',Arial,sans-serif;font-size:6pt;font-weight:400"> / الطبيب المخرِّج</span></div></div><div class="sb"><div class="sl2"></div><div class="sl3">Nurse<span style="font-family:'Cairo',Arial,sans-serif;font-size:6pt;font-weight:400"> / الممرضة</span></div></div><div class="sb"><div class="sl2"></div><div class="sl3">Patient / Guardian Signature<span style="font-family:'Cairo',Arial,sans-serif;font-size:6pt;font-weight:400"> / توقيع المريضة / وليّها</span></div></div></div>
+</div>
+</div>
+</div>
+<script>
+
+var savedHospName='',savedLogoUrl=null;
+function showStop(id){
+  document.querySelectorAll('.stop').forEach(function(s){s.classList.remove('active');});
+  document.querySelectorAll('.stop-btn').forEach(function(b){b.classList.remove('active');});
+  document.getElementById('stop-'+id).classList.add('active');
+  document.querySelector('[data-stop="'+id+'"]').classList.add('active');
+}
+function printStop(id){
+  var nav=document.querySelector('.nav');
+  var legend=document.getElementById('pathway-legend');
+  var stops=document.querySelectorAll('.stop');
+  var target=document.getElementById('stop-'+id);
+  if(!target) return;
+  if(nav) nav.style.display='none';
+  if(legend) legend.style.display='none';
+  stops.forEach(function(s){s.style.display='none';});
+  target.style.display='block';
+  window.addEventListener('afterprint',function restore(){
+    if(nav) nav.style.display='';
+    if(legend) legend.style.display='';
+    stops.forEach(function(s){s.style.display='';});
+    var act=document.querySelector('.stop.active');
+    if(act) act.style.display='block';
+    window.removeEventListener('afterprint',restore);
+  });
+  window.print();
+}
+
+function openSettings(){document.getElementById('sp').style.display='flex';document.getElementById('si-n').value=savedHospName;}
+function closeSettings(){document.getElementById('sp').style.display='none';}
+function applySettings(){
+  var n=document.getElementById('si-n').value.trim();
+  if(n){savedHospName=n;document.querySelectorAll('.hosp-name').forEach(function(el){el.textContent=n;});}
+  var ld=document.getElementById('ld').value;
+  if(ld){savedLogoUrl=ld;document.querySelectorAll('.logo-box').forEach(function(b){b.innerHTML='<img src="'+ld+'" style="max-width:42px;max-height:42px;object-fit:contain;border-radius:3px">';});}
+  closeSettings();
+}
+document.getElementById('lf').addEventListener('change',function(){
+  var f=this.files[0];if(!f)return;
+  var r=new FileReader();
+  r.onload=function(e){document.getElementById('ld').value=e.target.result;document.getElementById('lp').src=e.target.result;document.getElementById('lp').style.display='block';};
+  r.readAsDataURL(f);
+});
+
+function printAll(){
+  var nav=document.querySelector('.nav');
+  if(nav) nav.style.display='none';
+  window.addEventListener('afterprint',function r(){
+    if(nav) nav.style.display='';
+    window.removeEventListener('afterprint',r);
+  });
+  window.print();
+}
+</script>
+</body>
+</html>
